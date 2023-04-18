@@ -4,10 +4,9 @@ import {
   Text,
   Linking,
   Pressable,
-  Image,
 } from "react-native";
 import * as Clipboard from "expo-clipboard";
-import { AntDesign } from '@expo/vector-icons'; 
+import { AntDesign } from "@expo/vector-icons";
 
 function MemoItem(props) {
   const imagesAndFunctions = [
@@ -42,6 +41,7 @@ function MemoItem(props) {
   return (
     <View style={styles.memo}>
       <Text style={styles.memoText}>{props.text}</Text>
+      <Text style={styles.dateText}>{props.date}</Text>
       <View style={styles.imageGroup}>
         {imagesAndFunctions.map((item, index) => {
           return (
@@ -50,7 +50,12 @@ function MemoItem(props) {
                 onPress={item.function}
                 style={({ pressed }) => pressed && styles.pressedImage}
               >
-                <AntDesign name={item.icon} size={24} color="black" style={styles.icon}/>
+                <AntDesign
+                  name={item.icon}
+                  size={24}
+                  color="black"
+                  style={styles.icon}
+                />
               </Pressable>
             </View>
           );
@@ -72,6 +77,11 @@ const styles = StyleSheet.create({
   memoText: {
     padding: 15,
     fontSize: 16,
+  },
+  dateText: {
+    fontSize: 12,
+    paddingHorizontal: 15,
+    alignSelf: "flex-end",
   },
   imageGroup: {
     flexDirection: "row",

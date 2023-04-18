@@ -1,9 +1,11 @@
-import { useState } from 'react';
-import { StyleSheet, View, FlatList, Button, SafeAreaView } from 'react-native';
-import { StatusBar } from 'expo-status-bar';
+import { useState } from "react";
+import { NavigationContainer } from "@react-navigation/native";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import Main from "./components/main/Main";
+import MemoInput from "./components/memo/MemoInput";
+import { AntDesign } from "@expo/vector-icons";
 
-import MemoItem from './components/MemoItem';
-import MemoInput from './components/MemoInput';
+const Tab = createBottomTabNavigator();
 
 export default function App() {
   const [modalIsVisible, setModalIsVisible] = useState(false);
@@ -18,9 +20,10 @@ export default function App() {
   }
 
   function addMemoHandler(enteredGoalText) {
+    const date = new Date().toLocaleString("ko-KR", { timeZone: "Asia/Seoul" });
     setCourseGoals((currentCourseGoals) => [
+      { text: enteredGoalText, id: Math.random().toString(), date },
       ...currentCourseGoals,
-      { text: enteredGoalText, id: Math.random().toString() },
     ]);
     closeModalHandler();
   }
@@ -33,43 +36,59 @@ export default function App() {
 
   return (
     <>
-      <StatusBar style="auto" />
-      <SafeAreaView style={styles.appContainer}>
-        <View style={styles.goalsContainer}>
-          <FlatList
-            data={courseGoals}
-            renderItem={(itemData) => {
-              return (
-                <MemoItem
-                  text={itemData.item.text}
-                  id={itemData.item.id}
-                  onDeleteItem={doneMemoHandler}
-                />
-              );
+      <NavigationContainer>
+        <Tab.Navigator
+          screenOptions={{
+            headerShown: false,
+            tabBarShowLabel: false,
+            tabBarActiveTintColor: "black",
+          }}
+        >
+          <Tab.Screen
+            name="Main"
+            children={() => (
+              <Main
+                courseGoals={courseGoals}
+                doneMemoHandler={doneMemoHandler}
+              />
+            )}
+            options={{
+              tabBarIcon: ({ color, size }) => (
+                <AntDesign name="bars" size={size} color={color} />
+              ),
             }}
-            keyExtractor={(item, index) => {
-              return item.id;
-            }}
-            alwaysBounceVertical={false}
           />
-        </View>
+          <Tab.Screen
+            name="Add"
+            component={MemoInput}
+            listeners={{
+              tabPress: (e) => {
+                e.preventDefault();
+                openInputModal();
+              },
+            }}
+            options={{
+              tabBarIcon: ({ color, size }) => (
+                <AntDesign name="pluscircleo" size={30} color="black" />
+              ),
+            }}
+          />
+          <Tab.Screen
+            name="tetst"
+            children={() => <Main courseGoals={courseGoals} />}
+            options={{
+              tabBarIcon: ({ color, size }) => (
+                <AntDesign name="save" size={size} color={color} />
+              ),
+            }}
+          />
+        </Tab.Navigator>
         <MemoInput
           visible={modalIsVisible}
           onAddGoal={addMemoHandler}
           onCancel={closeModalHandler}
         />
-        <Button title="Add Memo" color="#000" onPress={openInputModal} />
-      </SafeAreaView>
+      </NavigationContainer>
     </>
   );
 }
-
-const styles = StyleSheet.create({
-  appContainer: {
-    flex: 1,
-  },
-  goalsContainer: {
-    flex: 5,
-    paddingHorizontal: 15,
-  },
-});
