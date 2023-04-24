@@ -1,3 +1,4 @@
+import { useNavigation } from "@react-navigation/native";
 import { useState } from "react";
 import {
   View,
@@ -12,6 +13,7 @@ import {
 function GoalInput(props) {
   const [enteredGoalText, setEnteredGoalText] = useState("");
   const [warning, setWarning] = useState(false);
+  const navigation = useNavigation();
 
   function goalInputHandler(enteredText) {
     if (enteredText.length > 0) {
@@ -27,6 +29,7 @@ function GoalInput(props) {
     }
     props.onAddGoal(enteredGoalText);
     setEnteredGoalText("");
+    navigation.navigate("Main");
   }
   function modalCloseHandler() {
     setEnteredGoalText("");
