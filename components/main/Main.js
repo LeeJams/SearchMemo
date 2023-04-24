@@ -6,9 +6,9 @@ import MemoItem from "../memo/MemoItem";
 export default function Main(props) {
   return (
     <SafeAreaView style={styles.appContainer}>
-      <View style={styles.goalsContainer}>
+      <View style={styles.memosContainer}>
         <FlatList
-          data={props.courseGoals}
+          data={props.memos}
           renderItem={(itemData) => {
             return (
               <MemoItem
@@ -34,7 +34,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingTop: Platform.OS === 'android' ? 25 : 0
   },
-  goalsContainer: {
+  memosContainer: {
     flex: 5,
     paddingHorizontal: 15,
   },

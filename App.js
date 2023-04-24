@@ -1,37 +1,28 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import Main from "./components/main/Main";
 import Done from "./components/done/Done";
-import MemoInput from "./components/memo/MemoInput";
+import MemoInputModal from "./components/memo/MemoInputModal";
 import { AntDesign } from "@expo/vector-icons";
 
 const Tab = createBottomTabNavigator();
 
 export default function App() {
-  const [modalIsVisible, setModalIsVisible] = useState(false);
-  const [courseGoals, setCourseGoals] = useState([]);
+  const [memos, setMemo] = useState([]);
+  const memoInputRef = useRef(null);
 
-  function openInputModal() {
-    setModalIsVisible(true);
-  }
-
-  function closeModalHandler() {
-    setModalIsVisible(false);
-  }
-
-  function addMemoHandler(enteredGoalText) {
+  function addMemoHandler(enteredMemo) {
     const date = new Date().toLocaleString("ko-KR", { timeZone: "Asia/Seoul" });
-    setCourseGoals((currentCourseGoals) => [
-      { text: enteredGoalText, id: Math.random().toString(), date },
-      ...currentCourseGoals,
+    setMemo((currentMemos) => [
+      { text: enteredMemo, id: Math.random().toString(), date },
+      ...currentMemos,
     ]);
-    closeModalHandler();
   }
 
   function doneMemoHandler(id) {
-    setCourseGoals((currentCourseGoals) => {
-      return currentCourseGoals.filter((goal) => goal.id !== id);
+    setMemo((currentMemos) => {
+      return currentMemos.filter((memo) => memo.id !== id);
     });
   }
 
@@ -47,7 +38,7 @@ export default function App() {
         <Tab.Screen
           name="Main"
           children={() => (
-            <Main courseGoals={courseGoals} doneMemoHandler={doneMemoHandler} />
+            <Main memos={memos} doneMemoHandler={doneMemoHandler} />
           )}
           options={{
             tabBarIcon: ({ color, size }) => (
@@ -56,12 +47,12 @@ export default function App() {
           }}
         />
         <Tab.Screen
-          name="Add"
-          component={MemoInput}
+          name="Modal"
+          component={MemoInputModal}
           listeners={{
             tabPress: (e) => {
               e.preventDefault();
-              openInputModal();
+              memoInputRef.current.openModal();
             },
           }}
           options={{
@@ -71,7 +62,7 @@ export default function App() {
           }}
         />
         <Tab.Screen
-          name="tetst"
+          name="Done"
           children={() => <Done courseGoals={[]} />}
           options={{
             tabBarIcon: ({ color, size }) => (
@@ -80,10 +71,9 @@ export default function App() {
           }}
         />
       </Tab.Navigator>
-      <MemoInput
-        visible={modalIsVisible}
-        onAddGoal={addMemoHandler}
-        onCancel={closeModalHandler}
+      <MemoInputModal
+        onAddMemo={addMemoHandler}
+        ref={memoInputRef}
       />
     </NavigationContainer>
   );
