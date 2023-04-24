@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { StyleSheet, View, FlatList, SafeAreaView } from "react-native";
 
 import MemoItem from "../memo/MemoItem";

@@ -36,7 +36,7 @@ function MemoItem(props) {
       function: () => {
         Alert.alert(
           "햑생인가요?",
-          "ㄹㅇ",
+          null,
           [
             {
               text: "아니요",

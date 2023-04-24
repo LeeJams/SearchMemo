@@ -5,12 +5,14 @@ import Main from "./components/main/Main";
 import Done from "./components/done/Done";
 import MemoInputModal from "./components/memo/MemoInputModal";
 import { AntDesign } from "@expo/vector-icons";
+import SelectPickerModal from "./components/modal/SelectPickerModal";
 
 const Tab = createBottomTabNavigator();
 
 export default function App() {
   const [memos, setMemo] = useState([]);
   const memoInputRef = useRef(null);
+  
 
   function addMemoHandler(enteredMemo) {
     const date = new Date().toLocaleString("ko-KR", { timeZone: "Asia/Seoul" });
@@ -75,6 +77,7 @@ export default function App() {
         onAddMemo={addMemoHandler}
         ref={memoInputRef}
       />
+      <SelectPickerModal visible={true}/>
     </NavigationContainer>
   );
 }
