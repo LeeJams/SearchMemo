@@ -14,7 +14,7 @@ export default function Main(props) {
                 text={itemData.item.text}
                 id={itemData.item.id}
                 date={itemData.item.date}
-                onDeleteItem={props.doneMemoHandler}
+                openSelectPicker={props.openSelectPicker}
               />
             );
           }}

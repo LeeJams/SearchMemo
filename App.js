@@ -10,22 +10,45 @@ import SelectPickerModal from "./components/modal/SelectPickerModal";
 const Tab = createBottomTabNavigator();
 
 export default function App() {
-  const [memos, setMemo] = useState([]);
+  const [memos, setMemos] = useState([]);
+  const [savedMemos, setSavedMemos] = useState([]);
+  const [selectedMemoId, setSelectedMemoId] = useState(null);
+  const [isSelectPickerVisible, setIsSelectPickerVisible] = useState(false);
   const memoInputRef = useRef(null);
-  
 
   function addMemoHandler(enteredMemo) {
     const date = new Date().toLocaleString("ko-KR", { timeZone: "Asia/Seoul" });
-    setMemo((currentMemos) => [
+    setMemos((currentMemos) => [
       { text: enteredMemo, id: Math.random().toString(), date },
       ...currentMemos,
     ]);
   }
 
-  function doneMemoHandler(id) {
-    setMemo((currentMemos) => {
+  function deleteMemo(id) {
+    setMemos((currentMemos) => {
       return currentMemos.filter((memo) => memo.id !== id);
     });
+    closeSelectPickerModal();
+  }
+
+  function moveToSavedMemos(id) {
+    setSavedMemos((currentMemos) => {
+      const memo = memos.find((memo) => memo.id === id);
+      return [
+        { text: memo.text, id: memo.id, date: memo.date },
+        ...currentMemos,
+      ];
+    });
+    deleteMemo(id);
+  }
+
+  function openSelectPickerModal(id) {
+    setIsSelectPickerVisible(true);
+    setSelectedMemoId(id);
+  }
+
+  function closeSelectPickerModal() {
+    setIsSelectPickerVisible(false);
   }
 
   return (
@@ -40,7 +63,7 @@ export default function App() {
         <Tab.Screen
           name="Main"
           children={() => (
-            <Main memos={memos} doneMemoHandler={doneMemoHandler} />
+            <Main memos={memos} openSelectPicker={openSelectPickerModal} />
           )}
           options={{
             tabBarIcon: ({ color, size }) => (
@@ -65,7 +88,7 @@ export default function App() {
         />
         <Tab.Screen
           name="Done"
-          children={() => <Done courseGoals={[]} />}
+          children={() => <Done courseGoals={savedMemos} />}
           options={{
             tabBarIcon: ({ color, size }) => (
               <AntDesign name="save" size={size} color={color} />
@@ -73,11 +96,14 @@ export default function App() {
           }}
         />
       </Tab.Navigator>
-      <MemoInputModal
-        onAddMemo={addMemoHandler}
-        ref={memoInputRef}
+      <MemoInputModal onAddMemo={addMemoHandler} ref={memoInputRef} />
+      <SelectPickerModal
+        visible={isSelectPickerVisible}
+        closeModal={closeSelectPickerModal}
+        deleteMemo={deleteMemo}
+        moveToSavedMemos={moveToSavedMemos}
+        id={selectedMemoId}
       />
-      <SelectPickerModal visible={true}/>
     </NavigationContainer>
   );
 }

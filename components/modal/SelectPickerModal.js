@@ -1,27 +1,27 @@
 import React, { useState } from "react";
 import { View, Text, Modal, StyleSheet, TouchableOpacity } from "react-native";
 
-const SelectModal = ({ visible }) => {
+const SelectModal = (props) => {
   const options = [
     {
-      label: "Option 1",
+      label: "저장 폴더로 이동",
       value: "option1",
-      onPress: () => console.log("option 1 pressed"),
+      onPress: () => props.moveToSavedMemos(props.id),
     },
     {
-      label: "Option 2",
+      label: "삭제",
       value: "option2",
-      onPress: () => console.log("option 2 pressed"),
+      onPress: () => props.deleteMemo(props.id),
     },
     {
-      label: "Option 3",
+      label: "취소",
       value: "option3",
-      onPress: () => console.log("option 3 pressed"),
+      onPress: () => props.closeModal(),
     },
   ];
 
   return (
-    <Modal visible={visible} animationType="slide" transparent={true}>
+    <Modal visible={props.visible} animationType="none" transparent={true}>
       <View style={styles.modalOverlay}>
         <View style={styles.optionsContainer}>
           {options.map((option) => (
