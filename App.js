@@ -24,6 +24,16 @@ export default function App() {
     ]);
   }
 
+  function modifyMemoHandler(enteredMemo, id) {
+    const date = new Date().toLocaleString("ko-KR", { timeZone: "Asia/Seoul" });
+    setMemos((currentMemos) => {
+      const memo = currentMemos.find((memo) => memo.id === id);
+      memo.text = enteredMemo;
+      memo.date = date;
+      return [...currentMemos];
+    });
+  }
+
   function deleteMemo(id) {
     setMemos((currentMemos) => {
       return currentMemos.filter((memo) => memo.id !== id);
@@ -31,15 +41,10 @@ export default function App() {
     closeSelectPickerModal();
   }
 
-  function moveToSavedMemos(id) {
-    setSavedMemos((currentMemos) => {
-      const memo = memos.find((memo) => memo.id === id);
-      return [
-        { text: memo.text, id: memo.id, date: memo.date },
-        ...currentMemos,
-      ];
-    });
-    deleteMemo(id);
+  function modifyMemo(id) {
+    const memo = memos.find((memo) => memo.id === id);
+    memoInputRef.current.modifyMemoHandler(memo);
+    closeSelectPickerModal();
   }
 
   function openSelectPickerModal(id) {
@@ -88,7 +93,7 @@ export default function App() {
         />
         <Tab.Screen
           name="Done"
-          children={() => <Done courseGoals={savedMemos} />}
+          children={() => <Done savedMemos={savedMemos} />}
           options={{
             tabBarIcon: ({ color, size }) => (
               <AntDesign name="save" size={size} color={color} />
@@ -96,12 +101,16 @@ export default function App() {
           }}
         />
       </Tab.Navigator>
-      <MemoInputModal onAddMemo={addMemoHandler} ref={memoInputRef} />
+      <MemoInputModal
+        onAddMemo={addMemoHandler}
+        onModifyMemo={modifyMemoHandler}
+        ref={memoInputRef}
+      />
       <SelectPickerModal
         visible={isSelectPickerVisible}
         closeModal={closeSelectPickerModal}
         deleteMemo={deleteMemo}
-        moveToSavedMemos={moveToSavedMemos}
+        modifyMemo={modifyMemo}
         id={selectedMemoId}
       />
     </NavigationContainer>

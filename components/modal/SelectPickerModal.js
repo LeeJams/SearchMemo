@@ -4,9 +4,9 @@ import { View, Text, Modal, StyleSheet, TouchableOpacity } from "react-native";
 const SelectModal = (props) => {
   const options = [
     {
-      label: "저장 폴더로 이동",
+      label: "수정",
       value: "option1",
-      onPress: () => props.moveToSavedMemos(props.id),
+      onPress: () => props.modifyMemo(props.id),
     },
     {
       label: "삭제",

@@ -13,16 +13,25 @@ import {
 
 const MemoInputModal = forwardRef((props, ref) => {
   const [enteredMemo, setEnteredMemo] = useState("");
+  const [isModify, setIsModify] = useState(false);
+  const [modifyMemoId, setModifyMemoId] = useState(null);
   const [warning, setWarning] = useState(false);
   const [modalIsVisible, setModalIsVisible] = useState(false);
   const navigation = useNavigation();
 
   useImperativeHandle(ref, () => ({
     openModal,
+    modifyMemoHandler,
   }));
 
   function openModal() {
     setModalIsVisible(true);
+  }
+  function modifyMemoHandler(originMemo) {
+    setEnteredMemo(originMemo.text);
+    setModifyMemoId(originMemo.id);
+    setIsModify(true);
+    openModal();
   }
 
   function memoInputHandler(enteredText) {
@@ -37,15 +46,18 @@ const MemoInputModal = forwardRef((props, ref) => {
       setWarning(true);
       return;
     }
-    props.onAddMemo(enteredMemo);
-    setEnteredMemo("");
-    setModalIsVisible(false);
+    if (isModify) props.onModifyMemo(enteredMemo, modifyMemoId);
+    else props.onAddMemo(enteredMemo);
+    modalCloseHandler();
     navigation.navigate("Main");
   }
+
   function modalCloseHandler() {
     setEnteredMemo("");
     setWarning(false);
     setModalIsVisible(false);
+    setIsModify(false);
+    setModifyMemoId(null);
   }
 
   return (
@@ -73,7 +85,10 @@ const MemoInputModal = forwardRef((props, ref) => {
               <Button title="취소" onPress={modalCloseHandler} />
             </View>
             <View style={styles.button}>
-              <Button title="추가" onPress={addMemoHandler} />
+              <Button
+                title={isModify ? "수정" : "추가"}
+                onPress={addMemoHandler}
+              />
             </View>
           </View>
         </View>

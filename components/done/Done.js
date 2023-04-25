@@ -1,26 +1,15 @@
-import { useState } from "react";
-import { StyleSheet, View, FlatList, SafeAreaView } from "react-native";
-
-import MemoItem from "../memo/MemoItem";
-
-export default function Main(props) {
+import { StyleSheet, View, FlatList, SafeAreaView, Text } from "react-native";
+export default function Done(props) {
   return (
     <SafeAreaView style={styles.appContainer}>
-      <View style={styles.goalsContainer}>
+      <View style={styles.savedMemosContainer}>
         <FlatList
-          data={props.courseGoals}
+          data={props.savedMemos}
           renderItem={(itemData) => {
-            return (
-              <MemoItem
-                text={itemData.item.text}
-                id={itemData.item.id}
-                date={itemData.item.date}
-                onDeleteItem={props.doneMemoHandler}
-              />
-            );
+            return <Text>{itemData.item}</Text>;
           }}
           keyExtractor={(item, index) => {
-            return item.id;
+            return index;
           }}
           alwaysBounceVertical={false}
         />
@@ -32,10 +21,9 @@ export default function Main(props) {
 const styles = StyleSheet.create({
   appContainer: {
     flex: 1,
-    paddingTop: Platform.OS === 'android' ? 25 : 0
+    paddingTop: Platform.OS === "android" ? 25 : 0,
   },
-  goalsContainer: {
-    flex: 5,
+  savedMemosContainer: {
     paddingHorizontal: 15,
   },
 });
