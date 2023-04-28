@@ -26,6 +26,7 @@ export default MemoInputModal = forwardRef((props, ref) => {
   function modifyMemoHandler(originMemo) {
     setEnteredMemo(originMemo.text);
     setModifyMemoId(originMemo.id);
+    setSelectedColor(originMemo.color);
     setIsModify(true);
   }
 
