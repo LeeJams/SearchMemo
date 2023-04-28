@@ -17,6 +17,7 @@ export default MemoInputModal = forwardRef((props, ref) => {
   const [modifyMemoId, setModifyMemoId] = useState(null);
   const [warning, setWarning] = useState(false);
   const navigation = useNavigation();
+  const [selecteColor, setSelectedColor] = useState("#e6e6e6");
 
   useImperativeHandle(ref, () => ({
     modifyMemoHandler,
@@ -40,8 +41,8 @@ export default MemoInputModal = forwardRef((props, ref) => {
       setWarning(true);
       return;
     }
-    if (isModify) props.modifyMemo(enteredMemo, modifyMemoId);
-    else props.addMemo(enteredMemo);
+    if (isModify) props.modifyMemo(enteredMemo, modifyMemoId, selecteColor);
+    else props.addMemo(enteredMemo, selecteColor);
     modalCloseHandler();
     navigation.navigate("MemoList");
   }
@@ -51,11 +52,25 @@ export default MemoInputModal = forwardRef((props, ref) => {
     setWarning(false);
     setIsModify(false);
     setModifyMemoId(null);
+    setSelectedColor("#e6e6e6");
     props.closeModal();
   }
 
+  const colorOptions = [
+    "#e6e6e6",
+    "#fa5252",
+    "#fae952",
+    "#fab452",
+    "#52c2fa",
+    "#8452fa",
+  ];
+
   return (
-    <Modal visible={props.modalIsVisible} animationType="slide" transparent={true}>
+    <Modal
+      visible={props.modalIsVisible}
+      animationType="slide"
+      transparent={true}
+    >
       <KeyboardAvoidingView behavior="padding" style={styles.modalOverlay}>
         <Pressable
           onPress={modalCloseHandler}
@@ -74,6 +89,19 @@ export default MemoInputModal = forwardRef((props, ref) => {
           {warning && (
             <Text style={styles.warningText}>내용을 입력해주세요.</Text>
           )}
+          <View style={styles.colorContainer}>
+            {colorOptions.map((color, idx) => (
+              <Pressable
+                key={idx}
+                style={{
+                  ...styles.colorButton,
+                  backgroundColor: color,
+                  borderWidth: selecteColor === color ? 2 : 0,
+                }}
+                onPress={() => setSelectedColor(color)}
+              ></Pressable>
+            ))}
+          </View>
           <View style={styles.buttonContainer}>
             <View style={styles.button}>
               <Button title="취소" onPress={modalCloseHandler} />
@@ -130,5 +158,16 @@ const styles = StyleSheet.create({
     fontSize: 12,
     paddingTop: 5,
     paddingLeft: 5,
+  },
+  colorContainer: {
+    flexDirection: "row",
+    marginVertical: 10,
+  },
+  colorButton: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    marginHorizontal: 10,
+    backgroundColor: "#ececec",
   },
 });

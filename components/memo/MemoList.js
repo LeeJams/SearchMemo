@@ -23,17 +23,17 @@ export default MemoList = forwardRef((props, ref) => {
     setModalIsVisible(false);
   }
 
-  function addMemoHandler(enteredMemo) {
+  function addMemoHandler(enteredMemo, selecteColor) {
     const date = new Date()
       .toLocaleString("ko-KR", { timeZone: "Asia/Seoul" })
       .substring(0, 10);
     setMemos((currentMemos) => [
-      { text: enteredMemo, id: Math.random().toString(), date },
+      { text: enteredMemo, id: Math.random().toString(), date, color: selecteColor },
       ...currentMemos,
     ]);
   }
 
-  function modifyMemoHandler(enteredMemo, id) {
+  function modifyMemoHandler(enteredMemo, id, selecteColor) {
     const date = new Date()
       .toLocaleString("ko-KR", { timeZone: "Asia/Seoul" })
       .substring(0, 10);
@@ -41,6 +41,7 @@ export default MemoList = forwardRef((props, ref) => {
       const memo = currentMemos.find((memo) => memo.id === id);
       memo.text = enteredMemo;
       memo.date = date;
+      memo.color = selecteColor;
       return [...currentMemos];
     });
   }

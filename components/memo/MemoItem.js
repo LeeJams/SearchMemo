@@ -3,14 +3,14 @@ import * as Clipboard from "expo-clipboard";
 import { AntDesign } from "@expo/vector-icons";
 
 function MemoItem(props) {
-  const { id, text, date } = props.item;
+  const { id, text, date, color } = props.item;
   return (
     <Pressable
       onPress={() => props.openSelectPicker(props.item)}
       style={({ pressed }) => pressed && styles.pressed}
     >
       <View style={styles.memoContainer}>
-        {/* <View style={styles.containerBadge}></View> */}
+        <View style={{...styles.containerBadge, backgroundColor: color}}></View>
         <Text style={styles.memoText}>{text}</Text>
         <View style={styles.dateBox}>
           <Text style={styles.dateText}>{date}</Text>
@@ -25,7 +25,7 @@ export default MemoItem;
 const styles = StyleSheet.create({
   memoContainer: {
     margin: 5,
-    borderRadius: 5,
+    borderRadius: 3,
     backgroundColor: "#fff",
     elevation: 5,
     shadowOpacity: 0.3,
@@ -52,7 +52,6 @@ const styles = StyleSheet.create({
   },
   containerBadge: {
     position: "absolute",
-    backgroundColor: "#5bbfc8",
     width: 8,
     height: 8,
     borderRadius: 5,
