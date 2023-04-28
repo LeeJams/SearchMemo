@@ -7,9 +7,10 @@ function MemoItem(props) {
   return (
     <Pressable
       onPress={() => props.openSelectPicker(props.item)}
-      style={({ pressed }) => pressed && styles.pressedImage}
+      style={({ pressed }) => pressed && styles.pressed}
     >
       <View style={styles.memoContainer}>
+        {/* <View style={styles.containerBadge}></View> */}
         <Text style={styles.memoText}>{text}</Text>
         <View style={styles.dateBox}>
           <Text style={styles.dateText}>{date}</Text>
@@ -24,9 +25,8 @@ export default MemoItem;
 const styles = StyleSheet.create({
   memoContainer: {
     margin: 5,
-    padding: 3,
     borderRadius: 5,
-    backgroundColor: "#f2f2f2",
+    backgroundColor: "#fff",
     elevation: 5,
     shadowOpacity: 0.3,
     shadowOffset: {
@@ -47,21 +47,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     alignSelf: "flex-end",
   },
-  imageGroup: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    alignItems: "center",
-  },
-  btnBox: {
-    flex: 1,
-    borderTopWidth: 1,
-  },
-  icon: {
-    width: 24,
-    marginVertical: 6,
-    alignSelf: "center",
-  },
-  pressedImage: {
+  pressed: {
     opacity: 0.5,
+  },
+  containerBadge: {
+    position: "absolute",
+    backgroundColor: "#5bbfc8",
+    width: 8,
+    height: 8,
+    borderRadius: 5,
+    zIndex: 1,
   },
 });

@@ -11,27 +11,21 @@ import {
   Pressable,
 } from "react-native";
 
-const MemoInputModal = forwardRef((props, ref) => {
+export default MemoInputModal = forwardRef((props, ref) => {
   const [enteredMemo, setEnteredMemo] = useState("");
   const [isModify, setIsModify] = useState(false);
   const [modifyMemoId, setModifyMemoId] = useState(null);
   const [warning, setWarning] = useState(false);
-  const [modalIsVisible, setModalIsVisible] = useState(false);
   const navigation = useNavigation();
 
   useImperativeHandle(ref, () => ({
-    openModal,
     modifyMemoHandler,
   }));
 
-  function openModal() {
-    setModalIsVisible(true);
-  }
   function modifyMemoHandler(originMemo) {
     setEnteredMemo(originMemo.text);
     setModifyMemoId(originMemo.id);
     setIsModify(true);
-    openModal();
   }
 
   function memoInputHandler(enteredText) {
@@ -46,22 +40,22 @@ const MemoInputModal = forwardRef((props, ref) => {
       setWarning(true);
       return;
     }
-    if (isModify) props.onModifyMemo(enteredMemo, modifyMemoId);
-    else props.onAddMemo(enteredMemo);
+    if (isModify) props.modifyMemo(enteredMemo, modifyMemoId);
+    else props.addMemo(enteredMemo);
     modalCloseHandler();
-    navigation.navigate("Main");
+    navigation.navigate("MemoList");
   }
 
   function modalCloseHandler() {
     setEnteredMemo("");
     setWarning(false);
-    setModalIsVisible(false);
     setIsModify(false);
     setModifyMemoId(null);
+    props.closeModal();
   }
 
   return (
-    <Modal visible={modalIsVisible} animationType="slide" transparent={true}>
+    <Modal visible={props.modalIsVisible} animationType="slide" transparent={true}>
       <KeyboardAvoidingView behavior="padding" style={styles.modalOverlay}>
         <Pressable
           onPress={modalCloseHandler}
@@ -96,8 +90,6 @@ const MemoInputModal = forwardRef((props, ref) => {
     </Modal>
   );
 });
-
-export default MemoInputModal;
 
 const styles = StyleSheet.create({
   modalOverlay: {

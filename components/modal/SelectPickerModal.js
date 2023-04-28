@@ -1,4 +1,3 @@
-import React, { useState } from "react";
 import {
   View,
   Text,
@@ -8,22 +7,26 @@ import {
   Linking,
 } from "react-native";
 import * as Clipboard from "expo-clipboard";
+import { AntDesign } from "@expo/vector-icons";
 
 const SelectModal = (props) => {
   const selectedMemo = props.selectedMemo;
-  console.log(selectedMemo);
   const options = [
     {
-      label: "구글로 검색",
-      value: "option1",
+      label: "Google",
+      icon: "google",
+      key: "option1",
+      color: "#0357c4",
       onPress: () => {
         Linking.openURL("https://www.google.com/search?q=" + selectedMemo.text);
         props.closeModal();
       },
     },
     {
-      label: "유튜브로 검색",
-      value: "option2",
+      label: "Youtube",
+      icon: "youtube",
+      key: "option2",
+      color: "#FF0000",
       onPress: () => {
         Linking.openURL(
           "https://www.youtube.com/results?search_query=" + selectedMemo.text
@@ -33,7 +36,9 @@ const SelectModal = (props) => {
     },
     {
       label: "복사",
-      value: "option3",
+      icon: "copy1",
+      key: "option3",
+      color: "#000",
       onPress: async () => {
         await Clipboard.setStringAsync(selectedMemo.text);
         props.closeModal();
@@ -41,17 +46,23 @@ const SelectModal = (props) => {
     },
     {
       label: "수정",
-      value: "option4",
+      icon: "edit",
+      key: "option4",
+      color: "#000",
       onPress: () => props.modifyMemo(selectedMemo),
     },
     {
       label: "삭제",
-      value: "option5",
+      icon: "delete",
+      key: "option5",
+      color: "#000",
       onPress: () => props.deleteMemo(selectedMemo.id),
     },
     {
       label: "취소",
-      value: "option6",
+      icon: "close",
+      key: "option6",
+      color: "#000",
       onPress: () => props.closeModal(),
     },
   ];
@@ -60,14 +71,22 @@ const SelectModal = (props) => {
     <Modal visible={props.visible} animationType="none" transparent={true}>
       <View style={styles.modalOverlay}>
         <View style={styles.optionsContainer}>
-          {options.map((option) => (
-            <TouchableOpacity
-              key={option.value}
-              style={styles.optionButton}
-              onPress={option.onPress}
-            >
-              <Text style={styles.optionText}>{option.label}</Text>
-            </TouchableOpacity>
+          {options.map((option, idx) => (
+            <View key={option.key} style={{ alignContent: "center" }}>
+              <TouchableOpacity
+                style={styles.optionButton}
+                onPress={option.onPress}
+              >
+                <AntDesign
+                  name={option.icon}
+                  size={23}
+                  color={option.color}
+                  style={{ width: "35%", textAlign: "right" }}
+                />
+                <Text style={styles.optionText}>{option.label}</Text>
+              </TouchableOpacity>
+              {idx !== 5 && <View style={styles.separator}></View>}
+            </View>
           ))}
         </View>
       </View>
@@ -82,17 +101,24 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0, 0, 0, 0.2)",
   },
   optionsContainer: {
-    margin: 60,
+    margin: "15%",
     borderRadius: 8,
     justifyContent: "center",
     backgroundColor: "#fff",
   },
   optionButton: {
+    flexDirection: "row",
+    alignItems: "center",
     padding: 15,
   },
   optionText: {
-    textAlign: "center",
+    width: "65%",
     fontSize: 17,
+    marginLeft: 30,
+  },
+  separator: {
+    height: 1,
+    backgroundColor: "#e0e0e0",
   },
 });
 
