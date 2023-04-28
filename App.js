@@ -12,12 +12,12 @@ const Tab = createBottomTabNavigator();
 export default function App() {
   const [memos, setMemos] = useState([]);
   const [savedMemos, setSavedMemos] = useState([]);
-  const [selectedMemoId, setSelectedMemoId] = useState(null);
+  const [selectedMemo, setSelectedMemo] = useState(null);
   const [isSelectPickerVisible, setIsSelectPickerVisible] = useState(false);
   const memoInputRef = useRef(null);
 
   function addMemoHandler(enteredMemo) {
-    const date = new Date().toLocaleString("ko-KR", { timeZone: "Asia/Seoul" });
+    const date = new Date().toLocaleString("ko-KR", { timeZone: "Asia/Seoul" }).substring(0, 10);
     setMemos((currentMemos) => [
       { text: enteredMemo, id: Math.random().toString(), date },
       ...currentMemos,
@@ -41,19 +41,19 @@ export default function App() {
     closeSelectPickerModal();
   }
 
-  function modifyMemo(id) {
-    const memo = memos.find((memo) => memo.id === id);
+  function modifyMemo(memo) {
     memoInputRef.current.modifyMemoHandler(memo);
     closeSelectPickerModal();
   }
 
-  function openSelectPickerModal(id) {
+  function openSelectPickerModal(memo) {
     setIsSelectPickerVisible(true);
-    setSelectedMemoId(id);
+    setSelectedMemo(memo);
   }
 
   function closeSelectPickerModal() {
     setIsSelectPickerVisible(false);
+    setSelectedMemo(null);
   }
 
   return (
@@ -62,7 +62,7 @@ export default function App() {
         screenOptions={{
           headerShown: false,
           tabBarShowLabel: false,
-          tabBarActiveTintColor: "black",
+          tabBarActiveTintColor: "#0a78e6",
         }}
       >
         <Tab.Screen
@@ -77,7 +77,7 @@ export default function App() {
           }}
         />
         <Tab.Screen
-          name="Modal"
+          name="MemoInputModal"
           component={MemoInputModal}
           listeners={{
             tabPress: (e) => {
@@ -87,7 +87,7 @@ export default function App() {
           }}
           options={{
             tabBarIcon: ({ color, size }) => (
-              <AntDesign name="pluscircleo" size={30} color="black" />
+              <AntDesign name="pluscircleo" size={30} color="#0a62e6" />
             ),
           }}
         />
@@ -111,7 +111,7 @@ export default function App() {
         closeModal={closeSelectPickerModal}
         deleteMemo={deleteMemo}
         modifyMemo={modifyMemo}
-        id={selectedMemoId}
+        selectedMemo={selectedMemo}
       />
     </NavigationContainer>
   );

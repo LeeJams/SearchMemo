@@ -1,21 +1,57 @@
 import React, { useState } from "react";
-import { View, Text, Modal, StyleSheet, TouchableOpacity } from "react-native";
+import {
+  View,
+  Text,
+  Modal,
+  StyleSheet,
+  TouchableOpacity,
+  Linking,
+} from "react-native";
+import * as Clipboard from "expo-clipboard";
 
 const SelectModal = (props) => {
+  const selectedMemo = props.selectedMemo;
+  console.log(selectedMemo);
   const options = [
     {
-      label: "수정",
+      label: "구글로 검색",
       value: "option1",
-      onPress: () => props.modifyMemo(props.id),
+      onPress: () => {
+        Linking.openURL("https://www.google.com/search?q=" + selectedMemo.text);
+        props.closeModal();
+      },
+    },
+    {
+      label: "유튜브로 검색",
+      value: "option2",
+      onPress: () => {
+        Linking.openURL(
+          "https://www.youtube.com/results?search_query=" + selectedMemo.text
+        );
+        props.closeModal();
+      },
+    },
+    {
+      label: "복사",
+      value: "option3",
+      onPress: async () => {
+        await Clipboard.setStringAsync(selectedMemo.text);
+        props.closeModal();
+      },
+    },
+    {
+      label: "수정",
+      value: "option4",
+      onPress: () => props.modifyMemo(selectedMemo),
     },
     {
       label: "삭제",
-      value: "option2",
-      onPress: () => props.deleteMemo(props.id),
+      value: "option5",
+      onPress: () => props.deleteMemo(selectedMemo.id),
     },
     {
       label: "취소",
-      value: "option3",
+      value: "option6",
       onPress: () => props.closeModal(),
     },
   ];

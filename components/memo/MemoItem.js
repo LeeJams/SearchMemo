@@ -1,86 +1,50 @@
-import {
-  StyleSheet,
-  View,
-  Text,
-  Linking,
-  Pressable,
-} from "react-native";
+import { StyleSheet, View, Text, Linking, Pressable } from "react-native";
 import * as Clipboard from "expo-clipboard";
 import { AntDesign } from "@expo/vector-icons";
 
 function MemoItem(props) {
-  const imagesAndFunctions = [
-    {
-      icon: "google",
-      function: () => {
-        Linking.openURL("https://www.google.com/search?q=" + props.text);
-      },
-    },
-    {
-      icon: "youtube",
-      function: () => {
-        Linking.openURL(
-          "https://www.youtube.com/results?search_query=" + props.text
-        );
-      },
-    },
-    {
-      icon: "copy1",
-      function: async () => {
-        await Clipboard.setStringAsync(props.text);
-      },
-    },
-    {
-      icon: "checkcircleo",
-      function: () => {
-        props.openSelectPicker(props.id);
-      },
-    },
-  ];
-
+  const { id, text, date } = props.item;
   return (
-    <View style={styles.memo}>
-      <Text style={styles.memoText}>{props.text}</Text>
-      <Text style={styles.dateText}>{props.date}</Text>
-      <View style={styles.imageGroup}>
-        {imagesAndFunctions.map((item, index) => {
-          return (
-            <View key={index} style={styles.btnBox}>
-              <Pressable
-                onPress={item.function}
-                style={({ pressed }) => pressed && styles.pressedImage}
-              >
-                <AntDesign
-                  name={item.icon}
-                  size={24}
-                  color="black"
-                  style={styles.icon}
-                />
-              </Pressable>
-            </View>
-          );
-        })}
+    <Pressable
+      onPress={() => props.openSelectPicker(props.item)}
+      style={({ pressed }) => pressed && styles.pressedImage}
+    >
+      <View style={styles.memoContainer}>
+        <Text style={styles.memoText}>{text}</Text>
+        <View style={styles.dateBox}>
+          <Text style={styles.dateText}>{date}</Text>
+        </View>
       </View>
-    </View>
+    </Pressable>
   );
 }
 
 export default MemoItem;
 
 const styles = StyleSheet.create({
-  memo: {
+  memoContainer: {
     margin: 5,
+    padding: 3,
     borderRadius: 5,
-    borderWidth: 1,
     backgroundColor: "#f2f2f2",
+    elevation: 5,
+    shadowOpacity: 0.3,
+    shadowOffset: {
+      width: 1,
+      height: 1,
+    },
   },
   memoText: {
-    padding: 15,
-    fontSize: 16,
+    padding: 10,
+    fontSize: 15,
+  },
+  dateBox: {
+    borderTopWidth: 0.7,
+    borderTopColor: "#878787",
   },
   dateText: {
     fontSize: 12,
-    paddingHorizontal: 15,
+    paddingHorizontal: 10,
     alignSelf: "flex-end",
   },
   imageGroup: {
