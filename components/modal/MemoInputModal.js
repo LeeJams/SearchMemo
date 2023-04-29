@@ -133,7 +133,6 @@ const styles = StyleSheet.create({
     padding: 16,
     backgroundColor: "#fff",
     shadowOpacity: 0.25,
-    paddingBottom: 50,
     elevation: 10,
   },
   textInput: {
