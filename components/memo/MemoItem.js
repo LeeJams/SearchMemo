@@ -1,6 +1,4 @@
 import { StyleSheet, View, Text, Linking, Pressable, Dimensions } from "react-native";
-import * as Clipboard from "expo-clipboard";
-import { AntDesign } from "@expo/vector-icons";
 
 function MemoItem(props) {
   const { id, text, date, color } = props.item;
@@ -10,11 +8,9 @@ function MemoItem(props) {
       style={({ pressed }) => pressed && styles.pressed}
     >
       <View style={styles.memoContainer}>
-        <View style={{...styles.containerBadge, backgroundColor: color}}></View>
         <Text style={styles.memoText}>{text}</Text>
-        <View style={styles.dateBox}>
-          <Text style={styles.dateText}>{date}</Text>
-        </View>
+        <Text style={styles.dateText}>{date}</Text>
+        <View style={{...styles.containerBadge, backgroundColor: color}}></View>
       </View>
     </Pressable>
   );
@@ -22,13 +18,15 @@ function MemoItem(props) {
 
 export default MemoItem;
 
-const width = Dimensions.get("window").width - 35;
+const width = Dimensions.get("window").width - 13;
 
 const styles = StyleSheet.create({
   memoContainer: {
     width: width / 2,
-    marginVertical: 5,
+    marginBottom: 5,
     borderRadius: 3,
+    borderWidth: 1,
+    borderColor: "#eee",
     backgroundColor: "#fff",
     elevation: 5,
     shadowOpacity: 0.3,
@@ -39,16 +37,14 @@ const styles = StyleSheet.create({
   },
   memoText: {
     padding: 10,
+    paddingVertical: 15,
     fontSize: 15,
-  },
-  dateBox: {
-    borderTopWidth: 0.7,
-    borderTopColor: "#878787",
   },
   dateText: {
     fontSize: 12,
     paddingHorizontal: 10,
     alignSelf: "flex-end",
+    color: "#9c9c9ca6",
   },
   pressed: {
     opacity: 0.5,

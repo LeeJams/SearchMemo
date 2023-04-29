@@ -1,4 +1,3 @@
-import { useNavigation } from "@react-navigation/native";
 import { forwardRef, useImperativeHandle, useState } from "react";
 import {
   View,

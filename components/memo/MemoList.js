@@ -1,9 +1,11 @@
-import { StyleSheet, View, FlatList, SafeAreaView, TouchableOpacity } from "react-native";
+import { StyleSheet, View, FlatList, SafeAreaView, TouchableOpacity, Dimensions } from "react-native";
 import MemoItem from "./MemoItem";
 import MemoInputModal from "../modal/MemoInputModal";
 import SelectPickerModal from "../modal/SelectPickerModal";
 import { AntDesign } from "@expo/vector-icons";
 import { useRef, useState } from "react";
+
+const btnWidth = Math.floor(Dimensions.get("window").width / 8);
 
 export default MemoList = (props) => {
   const [memos, setMemos] = useState([]);
@@ -69,6 +71,8 @@ export default MemoList = (props) => {
     setIsSelectPickerVisible(false);
   }
 
+  
+
   return (
     <SafeAreaView style={styles.appContainer}>
       <View style={styles.memosContainer}>
@@ -77,7 +81,7 @@ export default MemoList = (props) => {
           numColumns={2}
           columnWrapperStyle={{
             justifyContent: "space-between",
-            paddingHorizontal: 10,
+            paddingHorizontal: 4,
           }}
           style={styles.memoListContainer}
           renderItem={(itemData) => {
@@ -99,7 +103,7 @@ export default MemoList = (props) => {
         onPress={() => setModalIsVisible(true)}
       >
         <View style={styles.addButtonItem}>
-          <AntDesign name="pluscircle" size={40} color="#0a62e6" />
+          <AntDesign name="pluscircle" size={btnWidth} color="#0a62e6" />
         </View>
       </TouchableOpacity>
       <MemoInputModal
@@ -124,6 +128,7 @@ const styles = StyleSheet.create({
   appContainer: {
     flex: 1,
     paddingTop: Platform.OS === "android" ? 25 : 0,
+    backgroundColor: "#e8e8e8",
   },
   memosContainer: {
     flex: 1,
@@ -135,14 +140,14 @@ const styles = StyleSheet.create({
   },
   addButtonContainer: {
     position: "absolute",
-    bottom: 20,
-    right: 15,
+    bottom: 40,
+    right: 20,
     justifyContent: "center",
     alignItems: "center",
   },
   addButtonItem: {
-    width: 50,
-    height: 50,
+    width: btnWidth,
+    height: btnWidth,
     borderRadius: 35,
   },
 });
