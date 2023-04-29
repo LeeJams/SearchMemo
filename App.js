@@ -1,10 +1,5 @@
-import { NavigationContainer } from "@react-navigation/native";
-import BottomTabs from "./components/navigation/CustomBottomTabs";
+import MemoList from "./components/memo/MemoList";
 
 export default function App() {
-  return (
-    <NavigationContainer>
-      <BottomTabs />
-    </NavigationContainer>
-  );
+  return <MemoList />;
 }

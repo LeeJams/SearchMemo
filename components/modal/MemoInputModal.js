@@ -16,7 +16,6 @@ export default MemoInputModal = forwardRef((props, ref) => {
   const [isModify, setIsModify] = useState(false);
   const [modifyMemoId, setModifyMemoId] = useState(null);
   const [warning, setWarning] = useState(false);
-  const navigation = useNavigation();
   const [selecteColor, setSelectedColor] = useState("#e6e6e6");
 
   useImperativeHandle(ref, () => ({
@@ -45,7 +44,6 @@ export default MemoInputModal = forwardRef((props, ref) => {
     if (isModify) props.modifyMemo(enteredMemo, modifyMemoId, selecteColor);
     else props.addMemo(enteredMemo, selecteColor);
     modalCloseHandler();
-    navigation.navigate("MemoList");
   }
 
   function modalCloseHandler() {

@@ -1,4 +1,4 @@
-import { StyleSheet, View, Text, Linking, Pressable } from "react-native";
+import { StyleSheet, View, Text, Linking, Pressable, Dimensions } from "react-native";
 import * as Clipboard from "expo-clipboard";
 import { AntDesign } from "@expo/vector-icons";
 
@@ -22,9 +22,12 @@ function MemoItem(props) {
 
 export default MemoItem;
 
+const width = Dimensions.get("window").width - 35;
+
 const styles = StyleSheet.create({
   memoContainer: {
-    margin: 5,
+    width: width / 2,
+    marginVertical: 5,
     borderRadius: 3,
     backgroundColor: "#fff",
     elevation: 5,

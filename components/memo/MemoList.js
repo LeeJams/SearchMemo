@@ -1,20 +1,16 @@
-import { StyleSheet, View, FlatList, SafeAreaView } from "react-native";
-
+import { StyleSheet, View, FlatList, SafeAreaView, TouchableOpacity } from "react-native";
 import MemoItem from "./MemoItem";
 import MemoInputModal from "../modal/MemoInputModal";
 import SelectPickerModal from "../modal/SelectPickerModal";
-import { forwardRef, useImperativeHandle, useRef, useState } from "react";
+import { AntDesign } from "@expo/vector-icons";
+import { useRef, useState } from "react";
 
-export default MemoList = forwardRef((props, ref) => {
+export default MemoList = (props) => {
   const [memos, setMemos] = useState([]);
   const [selectedMemo, setSelectedMemo] = useState(null);
   const [modalIsVisible, setModalIsVisible] = useState(false);
   const [isSelectPickerVisible, setIsSelectPickerVisible] = useState(false);
   const inputModalRef = useRef(null);
-
-  useImperativeHandle(ref, () => ({
-    openMemoInputModal,
-  }));
 
   function openMemoInputModal() {
     setModalIsVisible(true);
@@ -28,7 +24,12 @@ export default MemoList = forwardRef((props, ref) => {
       .toLocaleString("ko-KR", { timeZone: "Asia/Seoul" })
       .substring(0, 10);
     setMemos((currentMemos) => [
-      { text: enteredMemo, id: Math.random().toString(), date, color: selecteColor },
+      {
+        text: enteredMemo,
+        id: Math.random().toString(),
+        date,
+        color: selecteColor,
+      },
       ...currentMemos,
     ]);
   }
@@ -68,30 +69,16 @@ export default MemoList = forwardRef((props, ref) => {
     setIsSelectPickerVisible(false);
   }
 
-  const leftMemos = memos.filter((memo, idx) => (idx + 1) % 2 === 1);
-  const rightMemos = memos.filter((memo, idx) => (idx + 1) % 2 === 0);
-
   return (
     <SafeAreaView style={styles.appContainer}>
       <View style={styles.memosContainer}>
         <FlatList
-          data={leftMemos}
-          style={styles.memoListContainer}
-          renderItem={(itemData) => {
-            return (
-              <MemoItem
-                item={itemData.item}
-                openSelectPicker={openSelectPickerModal}
-              />
-            );
+          data={memos}
+          numColumns={2}
+          columnWrapperStyle={{
+            justifyContent: "space-between",
+            paddingHorizontal: 10,
           }}
-          keyExtractor={(item, index) => {
-            return item.id;
-          }}
-          alwaysBounceVertical={false}
-        />
-        <FlatList
-          data={rightMemos}
           style={styles.memoListContainer}
           renderItem={(itemData) => {
             return (
@@ -107,6 +94,14 @@ export default MemoList = forwardRef((props, ref) => {
           alwaysBounceVertical={false}
         />
       </View>
+      <TouchableOpacity
+        style={styles.addButtonContainer}
+        onPress={() => setModalIsVisible(true)}
+      >
+        <View style={styles.addButtonItem}>
+          <AntDesign name="pluscircle" size={40} color="#0a62e6" />
+        </View>
+      </TouchableOpacity>
       <MemoInputModal
         modalIsVisible={modalIsVisible}
         closeModal={closeMemoInputModal}
@@ -123,7 +118,7 @@ export default MemoList = forwardRef((props, ref) => {
       />
     </SafeAreaView>
   );
-});
+};
 
 const styles = StyleSheet.create({
   appContainer: {
@@ -134,9 +129,20 @@ const styles = StyleSheet.create({
     flex: 1,
     flexGrow: 1,
     flexDirection: "row",
-    paddingHorizontal: 15,
   },
   memoListContainer: {
     flex: 1,
+  },
+  addButtonContainer: {
+    position: "absolute",
+    bottom: 20,
+    right: 15,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  addButtonItem: {
+    width: 50,
+    height: 50,
+    borderRadius: 35,
   },
 });
