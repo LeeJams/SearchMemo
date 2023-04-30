@@ -1,5 +1,5 @@
-import MemoList from "./components/memo/MemoList";
+import MemoHome from "./components/memo/MemoHome";
 
 export default function App() {
-  return <MemoList />;
+  return <MemoHome />;
 }

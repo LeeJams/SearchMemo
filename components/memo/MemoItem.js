@@ -1,7 +1,7 @@
 import { StyleSheet, View, Text, Linking, Pressable, Dimensions } from "react-native";
 
 function MemoItem(props) {
-  const { id, text, date, color } = props.item;
+  const { text, date, color } = props.item;
   return (
     <Pressable
       onPress={() => props.openSelectPicker(props.item)}
