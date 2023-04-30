@@ -25,7 +25,7 @@ export default MemoHome = () => {
       }
     };
     getMemos().then((memos) => {
-      if (memos.length) {
+      if (memos?.length) {
         setMemos(memos);
       }
       setIsInitSetting(true);
@@ -133,7 +133,7 @@ export default MemoHome = () => {
 const styles = StyleSheet.create({
   appContainer: {
     flex: 1,
-    paddingTop: Platform.OS === "android" ? 25 : 0,
+    paddingTop: Platform.OS === "android" ? 45 : 0,
     backgroundColor: "#e8e8e8",
   },
   memosContainer: {
