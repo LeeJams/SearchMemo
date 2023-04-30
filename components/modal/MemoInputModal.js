@@ -9,6 +9,7 @@ import {
   KeyboardAvoidingView,
   Pressable,
 } from "react-native";
+import CommonButton from "../ui/CommonButton";
 
 export default MemoInputModal = forwardRef((props, ref) => {
   const [enteredMemo, setEnteredMemo] = useState("");
@@ -101,15 +102,10 @@ export default MemoInputModal = forwardRef((props, ref) => {
             ))}
           </View>
           <View style={styles.buttonContainer}>
-            <View style={styles.button}>
-              <Button title="취소" onPress={modalCloseHandler} />
-            </View>
-            <View style={styles.button}>
-              <Button
-                title={isModify ? "수정" : "추가"}
-                onPress={addMemoHandler}
-              />
-            </View>
+            <CommonButton onPress={modalCloseHandler}>취소</CommonButton>
+            <CommonButton onPress={addMemoHandler}>
+              {isModify ? "수정" : "추가"}
+            </CommonButton>
           </View>
         </View>
       </KeyboardAvoidingView>
@@ -123,11 +119,13 @@ const styles = StyleSheet.create({
   },
   modalPressOverlay: {
     flex: 1,
-    justifyContent: "flex-end",
   },
   inputContainer: {
-    alignItems: "center",
+    position: "absolute",
+    width: "100%",
     padding: 16,
+    bottom: 0,
+    alignItems: "center",
     backgroundColor: "#fff",
     shadowOpacity: 0.25,
     elevation: 10,

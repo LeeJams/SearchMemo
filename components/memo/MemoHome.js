@@ -4,8 +4,8 @@ import SelectPickerModal from "../modal/SelectPickerModal";
 import { useRef, useState, useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import MemoList from "./MemoList";
-import AddButton from "./AddButton";
-import EmptyScreen from "./EmptyScreen";
+import AddButton from "../ui/AddButton";
+import EmptyScreen from "../ui/EmptyScreen";
 
 export default MemoHome = () => {
   const [memos, setMemos] = useState([]);
