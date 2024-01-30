@@ -78,7 +78,7 @@ export default MemoInputModal = forwardRef((props, ref) => {
         <View style={styles.inputContainer}>
           <TextInput
             style={styles.textInput}
-            placeholder="검색어를 입력해주세요."
+            placeholder="메모를 입력해주세요."
             onChangeText={memoInputHandler}
             value={enteredMemo}
             autoCapitalize="none"
@@ -102,8 +102,10 @@ export default MemoInputModal = forwardRef((props, ref) => {
             ))}
           </View>
           <View style={styles.buttonContainer}>
-            <CommonButton onPress={modalCloseHandler}>취소</CommonButton>
-            <CommonButton onPress={addMemoHandler}>
+            <CommonButton onPress={modalCloseHandler} name="cancel">
+              취소
+            </CommonButton>
+            <CommonButton onPress={addMemoHandler} name="add">
               {isModify ? "수정" : "추가"}
             </CommonButton>
           </View>
@@ -162,6 +164,7 @@ const styles = StyleSheet.create({
     width: 30,
     height: 30,
     borderRadius: 15,
+    borderColor: "#878787",
     marginHorizontal: 10,
     backgroundColor: "#ececec",
   },
