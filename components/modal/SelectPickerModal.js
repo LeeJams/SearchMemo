@@ -109,12 +109,13 @@ const styles = StyleSheet.create({
   optionButton: {
     flexDirection: "row",
     alignItems: "center",
-    padding: 15,
+    padding: 10,
   },
   optionText: {
     width: "65%",
     fontSize: 17,
     marginLeft: 30,
+    fontFamily: "NotoSansKR",
   },
   separator: {
     height: 1,

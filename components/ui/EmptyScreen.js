@@ -17,5 +17,6 @@ const styles = StyleSheet.create({
   emptyScreenText: {
     fontSize: 20,
     color: "#000000bf",
+    fontFamily: "NotoSansKR",
   },
 });

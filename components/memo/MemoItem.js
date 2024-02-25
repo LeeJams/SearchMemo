@@ -1,16 +1,27 @@
-import { StyleSheet, View, Text, Linking, Pressable, Dimensions } from "react-native";
+import {
+  StyleSheet,
+  View,
+  Text,
+  Linking,
+  Pressable,
+  Dimensions,
+} from "react-native";
 
 function MemoItem(props) {
   const { text, date, color } = props.item;
+
   return (
     <Pressable
       onPress={() => props.openSelectPicker(props.item)}
       style={({ pressed }) => pressed && styles.pressed}
+      android_ripple={{ color: "#878787" }}
     >
       <View style={styles.memoContainer}>
         <Text style={styles.memoText}>{text}</Text>
         <Text style={styles.dateText}>{date}</Text>
-        <View style={{...styles.containerBadge, backgroundColor: color}}></View>
+        <View
+          style={{ ...styles.containerBadge, backgroundColor: color }}
+        ></View>
       </View>
     </Pressable>
   );
@@ -38,7 +49,8 @@ const styles = StyleSheet.create({
   memoText: {
     padding: 10,
     paddingVertical: 15,
-    fontSize: 15,
+    fontSize: 14,
+    fontFamily: "NotoSansKR",
   },
   dateText: {
     fontSize: 12,
@@ -51,6 +63,8 @@ const styles = StyleSheet.create({
   },
   containerBadge: {
     position: "absolute",
+    top: 1,
+    left: 1,
     width: 8,
     height: 8,
     borderRadius: 5,

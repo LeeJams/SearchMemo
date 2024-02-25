@@ -30,7 +30,7 @@ export default CommonButton = ({ children, onPress, name }) => {
 
 const styles = StyleSheet.create({
   buttonOuterContainer: {
-    borderRadius: 10,
+    borderRadius: 20,
     marginHorizontal: 20,
     overflow: "hidden",
     width: "30%",
@@ -41,22 +41,23 @@ const styles = StyleSheet.create({
   buttonText: {
     textAlign: "center",
     fontSize: 15,
-    fontWeight: 500,
+    fontWeight: "bold",
     paddingVertical: 8,
     paddingHorizontal: 16,
-    borderColor: "#878787",
+    borderColor: "#e1e1e3",
     borderWidth: 1,
-    borderRadius: 10,
+    borderRadius: 20,
+    fontFamily: "NotoSansKR",
   },
   pressed: {
     opacity: 0.75,
   },
   add: {
-    backgroundColor: "#878787",
-    color: "#fff",
+    backgroundColor: "#e1e1e3",
+    color: "#000",
   },
   cancel: {
     backgroundColor: "#fff",
-    color: "#878787",
+    color: "#000",
   },
 });

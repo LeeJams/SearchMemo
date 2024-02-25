@@ -153,8 +153,8 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
     color: "#ea4747",
     fontSize: 12,
-    paddingTop: 5,
-    paddingLeft: 5,
+    paddingLeft: 12,
+    fontFamily: "NotoSansKR",
   },
   colorContainer: {
     flexDirection: "row",

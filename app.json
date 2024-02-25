@@ -1,37 +1,38 @@
 {
   "expo": {
-    "name": "메모포서치",
-    "slug": "SearchBridge",
+    "name": "서치메모",
+    "slug": "search-memo",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/icon.jpeg",
     "userInterfaceStyle": "light",
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#acaaaa"
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.leejam.searchmemo"
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/icon.png",
+        "foregroundImage": "./assets/icon.jpeg",
         "backgroundColor": "#acaaaa"
       },
       "package": "com.leejam.searchmemo"
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/favicon.jpeg"
     },
     "extra": {
       "eas": {
         "projectId": "e996bfbd-f025-49a4-a601-294f9f8cb257"
       }
+    },
+    "fonts": {
+      "NotoSansKR": "./assets/fonts/NotoSansKR-Medium.ttf"
     }
   }
 }
