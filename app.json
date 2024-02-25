@@ -1,10 +1,10 @@
 {
   "expo": {
     "name": "서치메모",
-    "slug": "search-memo",
-    "version": "1.0.0",
+    "slug": "searchmemo",
+    "version": "1.3.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.jpeg",
+    "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "splash": {
       "image": "./assets/splash.png",
@@ -18,21 +18,18 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/icon.jpeg",
+        "foregroundImage": "./assets/icon.png",
         "backgroundColor": "#acaaaa"
       },
       "package": "com.leejam.searchmemo"
     },
     "web": {
-      "favicon": "./assets/favicon.jpeg"
+      "favicon": "./assets/favicon.png"
     },
     "extra": {
       "eas": {
-        "projectId": "e996bfbd-f025-49a4-a601-294f9f8cb257"
+        "projectId": "ab8e887e-d72d-4537-ac62-5c2053dce60b"
       }
-    },
-    "fonts": {
-      "NotoSansKR": "./assets/fonts/NotoSansKR-Medium.ttf"
     }
   }
 }
