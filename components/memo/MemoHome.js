@@ -1,4 +1,4 @@
-import { StyleSheet, View, SafeAreaView } from "react-native";
+import { StyleSheet, View, SafeAreaView, Platform } from "react-native";
 import MemoInputModal from "../modal/MemoInputModal";
 import SelectPickerModal from "../modal/SelectPickerModal";
 import { useRef, useState, useEffect } from "react";
