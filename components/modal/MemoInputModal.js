@@ -95,7 +95,7 @@ export default MemoInputModal = forwardRef((props, ref) => {
                 style={{
                   ...styles.colorButton,
                   backgroundColor: color,
-                  borderWidth: selecteColor === color ? 2 : 0,
+                  borderWidth: selecteColor === color ? 1.5 : 0,
                 }}
                 onPress={() => setSelectedColor(color)}
               ></Pressable>
@@ -164,7 +164,7 @@ const styles = StyleSheet.create({
     width: 30,
     height: 30,
     borderRadius: 15,
-    borderColor: "#878787",
+    borderColor: "#000",
     marginHorizontal: 10,
     backgroundColor: "#ececec",
   },

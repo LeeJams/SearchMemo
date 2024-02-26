@@ -35,21 +35,22 @@ const styles = StyleSheet.create({
   memoContainer: {
     width: width / 2,
     marginBottom: 5,
-    borderRadius: 3,
+    borderRadius: 10,
     borderWidth: 1,
     borderColor: "#eee",
     backgroundColor: "#fff",
-    elevation: 5,
+    elevation: 2,
     shadowOpacity: 0.3,
     shadowOffset: {
       width: 1,
       height: 1,
     },
+    shadowRadius: 2,
   },
   memoText: {
     padding: 10,
     paddingVertical: 15,
-    fontSize: 14,
+    fontSize: 13,
     fontFamily: "NotoSansKR",
   },
   dateText: {
@@ -63,8 +64,8 @@ const styles = StyleSheet.create({
   },
   containerBadge: {
     position: "absolute",
-    top: 1,
-    left: 1,
+    top: 2,
+    left: 2,
     width: 8,
     height: 8,
     borderRadius: 5,
