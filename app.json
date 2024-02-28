@@ -2,7 +2,7 @@
   "expo": {
     "name": "서치메모",
     "slug": "searchmemo",
-    "version": "1.3.0",
+    "version": "2.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -21,7 +21,8 @@
         "foregroundImage": "./assets/icon.png",
         "backgroundColor": "#acaaaa"
       },
-      "package": "com.leejam.searchmemo"
+      "package": "com.leejam.searchmemo",
+      "versionCode": 2
     },
     "web": {
       "favicon": "./assets/favicon.png"
