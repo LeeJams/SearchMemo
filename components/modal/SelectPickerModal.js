@@ -68,7 +68,12 @@ const SelectModal = (props) => {
   ];
 
   return (
-    <Modal visible={props.visible} animationType="none" transparent={true}>
+    <Modal
+      visible={props.visible}
+      animationType="none"
+      onRequestClose={props.closeModal}
+      transparent={true}
+    >
       <View style={styles.modalOverlay}>
         <View style={styles.optionsContainer}>
           {options.map((option, idx) => (

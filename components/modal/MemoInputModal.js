@@ -2,7 +2,6 @@ import { forwardRef, useImperativeHandle, useState } from "react";
 import {
   View,
   TextInput,
-  Button,
   StyleSheet,
   Modal,
   Text,
@@ -69,6 +68,7 @@ export default MemoInputModal = forwardRef((props, ref) => {
       visible={props.modalIsVisible}
       animationType="slide"
       transparent={true}
+      onRequestClose={modalCloseHandler}
     >
       <KeyboardAvoidingView behavior="padding" style={styles.modalOverlay}>
         <Pressable
