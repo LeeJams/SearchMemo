@@ -103,10 +103,10 @@ export default MemoInputModal = forwardRef((props, ref) => {
           </View>
           <View style={styles.buttonContainer}>
             <CommonButton onPress={modalCloseHandler} name="cancel">
-              취소
+              Cancel
             </CommonButton>
             <CommonButton onPress={addMemoHandler} name="add">
-              {isModify ? "수정" : "추가"}
+              {isModify ? "Edit" : "Add"}
             </CommonButton>
           </View>
         </View>

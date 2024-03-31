@@ -7,7 +7,7 @@ import {
   Linking,
 } from "react-native";
 import * as Clipboard from "expo-clipboard";
-import { AntDesign } from "@expo/vector-icons";
+import { AntDesign, FontAwesome5 } from "@expo/vector-icons";
 
 const SelectModal = (props) => {
   const selectedMemo = props.selectedMemo;
@@ -35,9 +35,45 @@ const SelectModal = (props) => {
       },
     },
     {
-      label: "복사",
-      icon: "copy1",
+      label: "Naver",
+      icon: "neos",
+      key: "option8",
+      color: "#03c75a",
+      onPress: () => {
+        Linking.openURL(
+          "https://search.naver.com/search.naver?query=" + selectedMemo.text
+        );
+        props.closeModal();
+      },
+    },
+    {
+      label: "Pinterest",
+      icon: "pinterest",
       key: "option3",
+      color: "#FF0000",
+      onPress: () => {
+        Linking.openURL(
+          "https://www.pinterest.co.kr/search/pins/?q=" + selectedMemo.text
+        );
+        props.closeModal();
+      },
+    },
+    {
+      label: "Reddit",
+      icon: "reddit",
+      key: "option7",
+      color: "#ff4500",
+      onPress: () => {
+        Linking.openURL(
+          "https://www.reddit.com/search/?q=" + selectedMemo.text
+        );
+        props.closeModal();
+      },
+    },
+    {
+      label: "Copy",
+      icon: "copy",
+      key: "option4",
       color: "#000",
       onPress: async () => {
         await Clipboard.setStringAsync(selectedMemo.text);
@@ -45,25 +81,18 @@ const SelectModal = (props) => {
       },
     },
     {
-      label: "수정",
+      label: "Edit",
       icon: "edit",
-      key: "option4",
+      key: "option5",
       color: "#000",
       onPress: () => props.modifyMemo(selectedMemo),
     },
     {
-      label: "삭제",
-      icon: "delete",
-      key: "option5",
-      color: "#000",
-      onPress: () => props.deleteMemo(selectedMemo.id),
-    },
-    {
-      label: "취소",
-      icon: "close",
+      label: "Delete",
+      icon: "eraser",
       key: "option6",
       color: "#000",
-      onPress: () => props.closeModal(),
+      onPress: () => props.deleteMemo(selectedMemo.id),
     },
   ];
 
@@ -74,23 +103,26 @@ const SelectModal = (props) => {
       onRequestClose={props.closeModal}
       transparent={true}
     >
-      <View style={styles.modalOverlay}>
-        <View style={styles.optionsContainer}>
+      <View style={styles.modalOverlay} onTouchEnd={props.closeModal}>
+        <View
+          style={styles.optionsContainer}
+          onTouchEnd={(e) => e.stopPropagation()}
+        >
           {options.map((option, idx) => (
-            <View key={option.key} style={{ alignContent: "center" }}>
+            <View key={option.key} style={styles.optionWrapper}>
               <TouchableOpacity
                 style={styles.optionButton}
                 onPress={option.onPress}
               >
-                <AntDesign
+                <FontAwesome5
                   name={option.icon}
                   size={23}
                   color={option.color}
-                  style={{ width: "35%", textAlign: "right" }}
+                  style={{ alignSelf: "center" }}
                 />
                 <Text style={styles.optionText}>{option.label}</Text>
               </TouchableOpacity>
-              {idx !== 5 && <View style={styles.separator}></View>}
+              {/* {idx !== 5 && <View style={styles.separator}></View>} */}
             </View>
           ))}
         </View>
@@ -106,20 +138,27 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0, 0, 0, 0.2)",
   },
   optionsContainer: {
-    margin: "15%",
+    margin: "5%",
+    padding: 10,
     borderRadius: 8,
     justifyContent: "center",
     backgroundColor: "#fff",
+    flexDirection: "row",
+    flexWrap: "wrap",
+  },
+  optionWrapper: {
+    width: "33%",
+    marginVertical: 6,
+    alignContent: "center",
   },
   optionButton: {
-    flexDirection: "row",
+    flexDirection: "column",
     alignItems: "center",
-    padding: 10,
+    padding: 8,
+    margin: 2,
   },
   optionText: {
-    width: "65%",
-    fontSize: 17,
-    marginLeft: 30,
+    fontSize: 14,
     fontFamily: "NotoSansKR",
   },
   separator: {

@@ -1,11 +1,4 @@
-import {
-  StyleSheet,
-  View,
-  Text,
-  Linking,
-  Pressable,
-  Dimensions,
-} from "react-native";
+import { StyleSheet, View, Text, Pressable, Dimensions } from "react-native";
 
 function MemoItem(props) {
   const { text, date, color } = props.item;
