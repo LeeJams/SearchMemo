@@ -1,11 +1,11 @@
 import { StyleSheet, View, SafeAreaView, Platform } from "react-native";
 import MemoInputModal from "../modal/MemoInputModal";
-import SelectPickerModal from "../modal/SelectPickerModal";
+import MemoActionModal from "../modal/MemoActionModal";
 import { useRef, useState, useEffect } from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import MemoList from "./MemoList";
 import AddButton from "../ui/AddButton";
 import EmptyScreen from "../ui/EmptyScreen";
+import { getCurrentDate, getMemos, storeMemos } from "../../utill/memo";
 
 export default MemoHome = () => {
   const [memos, setMemos] = useState([]);
@@ -16,14 +16,6 @@ export default MemoHome = () => {
   const inputModalRef = useRef(null);
 
   useEffect(() => {
-    const getMemos = async () => {
-      try {
-        const jsonValue = await AsyncStorage.getItem("memos");
-        return jsonValue != null ? JSON.parse(jsonValue) : null;
-      } catch (e) {
-        console.log(e);
-      }
-    };
     getMemos().then((memos) => {
       if (memos?.length) {
         setMemos(memos);
@@ -33,67 +25,18 @@ export default MemoHome = () => {
   }, []);
 
   useEffect(() => {
-    storeMemos();
+    storeMemos(memos);
   }, [memos]);
-
-  const storeMemos = async () => {
-    try {
-      const jsonValue = JSON.stringify(memos);
-      await AsyncStorage.setItem("memos", jsonValue);
-    } catch (e) {
-      console.log(e);
-    }
-  };
 
   function openMemoInputModal() {
     setModalIsVisible(true);
   }
+
   function closeMemoInputModal() {
     setModalIsVisible(false);
   }
 
-  function addMemoHandler(enteredMemo, selecteColor) {
-    const date = new Date()
-      .toLocaleString("ko-KR", { timeZone: "Asia/Seoul" })
-      .substring(0, 10);
-    setMemos((currentMemos) => [
-      {
-        text: enteredMemo,
-        id: currentMemos.length + 1,
-        date,
-        color: selecteColor,
-      },
-      ...currentMemos,
-    ]);
-  }
-
-  function modifyMemoHandler(enteredMemo, id, selecteColor) {
-    const date = new Date()
-      .toLocaleString("ko-KR", { timeZone: "Asia/Seoul" })
-      .substring(0, 10);
-    setMemos((currentMemos) => {
-      const memo = currentMemos.find((memo) => memo.id === id);
-      memo.text = enteredMemo;
-      memo.date = date;
-      memo.color = selecteColor;
-      return [...currentMemos];
-    });
-  }
-
-  function selectDeleteMemo(id) {
-    setMemos((currentMemos) => {
-      return currentMemos.filter((memo) => memo.id !== id);
-    });
-    closeSelectPickerModal();
-  }
-
-  function selectModifyMemo(memo) {
-    inputModalRef.current.modifyMemoHandler(memo);
-    openMemoInputModal();
-    closeSelectPickerModal();
-  }
-
-  function openSelectPickerModal(memo) {
+  function openMemoActionModal(memo) {
     setIsSelectPickerVisible(true);
     setSelectedMemo(memo);
   }
@@ -102,13 +45,55 @@ export default MemoHome = () => {
     setIsSelectPickerVisible(false);
   }
 
+  function addMemoHandler(memoData) {
+    setMemos((currentMemos) => [
+      {
+        text: memoData.text.trim(),
+        id: Date.now(),
+        date: getCurrentDate(),
+        color: memoData.color,
+      },
+      ...currentMemos,
+    ]);
+  }
+
+  function modifyMemoHandler(memoData) {
+    setMemos((currentMemos) => {
+      return currentMemos.map((memo) => {
+        if (memo.id === memoData.id) {
+          return {
+            id: memo.id,
+            text: memoData.text.trim(),
+            date: getCurrentDate(),
+            color: memoData.color,
+          };
+        } else {
+          return memo;
+        }
+      });
+    });
+  }
+
+  function deleteMemo(id) {
+    setMemos((currentMemos) => {
+      return currentMemos.filter((memo) => memo.id !== id);
+    });
+    closeSelectPickerModal();
+  }
+
+  function modifyMemo(memo) {
+    inputModalRef.current.modifyMemoHandler(memo);
+    openMemoInputModal();
+    closeSelectPickerModal();
+  }
+
   return (
     <SafeAreaView style={styles.appContainer}>
       <View style={styles.memosContainer}>
         {memos.length === 0 && isInitSetting ? (
           <EmptyScreen />
         ) : (
-          <MemoList memos={memos} openModal={openSelectPickerModal} />
+          <MemoList memos={memos} openModal={openMemoActionModal} />
         )}
       </View>
       <AddButton onClick={openMemoInputModal} />
@@ -119,11 +104,11 @@ export default MemoHome = () => {
         modifyMemo={modifyMemoHandler}
         ref={inputModalRef}
       />
-      <SelectPickerModal
+      <MemoActionModal
         visible={isSelectPickerVisible}
         closeModal={closeSelectPickerModal}
-        deleteMemo={selectDeleteMemo}
-        modifyMemo={selectModifyMemo}
+        deleteMemo={deleteMemo}
+        modifyMemo={modifyMemo}
         selectedMemo={selectedMemo}
       />
     </SafeAreaView>

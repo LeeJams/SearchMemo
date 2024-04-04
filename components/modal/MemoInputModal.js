@@ -9,22 +9,24 @@ import {
   Pressable,
 } from "react-native";
 import CommonButton from "../ui/CommonButton";
+import { colorOptions } from "../../utill/option";
 
 export default MemoInputModal = forwardRef((props, ref) => {
-  const [enteredMemo, setEnteredMemo] = useState("");
   const [isModify, setIsModify] = useState(false);
-  const [modifyMemoId, setModifyMemoId] = useState(null);
   const [warning, setWarning] = useState(false);
-  const [selecteColor, setSelectedColor] = useState("#e6e6e6");
+  const [memoData, setMemoData] = useState({
+    id: null,
+    text: "",
+    color: "#e6e6e6",
+    date: "",
+  });
 
   useImperativeHandle(ref, () => ({
     modifyMemoHandler,
   }));
 
   function modifyMemoHandler(originMemo) {
-    setEnteredMemo(originMemo.text);
-    setModifyMemoId(originMemo.id);
-    setSelectedColor(originMemo.color);
+    setMemoData(originMemo);
     setIsModify(true);
   }
 
@@ -32,36 +34,31 @@ export default MemoInputModal = forwardRef((props, ref) => {
     if (enteredText.length > 0) {
       setWarning(false);
     }
-    setEnteredMemo(enteredText);
+    setMemoData((prevMemoData) => ({ ...prevMemoData, text: enteredText }));
+  }
+
+  function colorSelectHandler(color) {
+    setMemoData((prevMemoData) => ({ ...prevMemoData, color: color }));
   }
 
   function addMemoHandler() {
-    if (enteredMemo.length === 0) {
+    if (!memoData.text.trim()) {
       setWarning(true);
       return;
     }
-    if (isModify) props.modifyMemo(enteredMemo, modifyMemoId, selecteColor);
-    else props.addMemo(enteredMemo, selecteColor);
+    if (isModify) props.modifyMemo(memoData);
+    else props.addMemo(memoData);
     modalCloseHandler();
   }
 
   function modalCloseHandler() {
-    setEnteredMemo("");
-    setWarning(false);
+    setMemoData({ id: null, text: "", color: "#e6e6e6", date: "" });
     setIsModify(false);
-    setModifyMemoId(null);
-    setSelectedColor("#e6e6e6");
+    setWarning(false);
     props.closeModal();
   }
 
-  const colorOptions = [
-    "#e6e6e6",
-    "#fa5252",
-    "#fae952",
-    "#fab452",
-    "#52c2fa",
-    "#8452fa",
-  ];
+  const options = colorOptions;
 
   return (
     <Modal
@@ -80,7 +77,7 @@ export default MemoInputModal = forwardRef((props, ref) => {
             style={styles.textInput}
             placeholder="메모를 입력해주세요."
             onChangeText={memoInputHandler}
-            value={enteredMemo}
+            value={memoData.text}
             autoCapitalize="none"
             autoCorrect={false}
             autoFocus={true}
@@ -89,15 +86,15 @@ export default MemoInputModal = forwardRef((props, ref) => {
             <Text style={styles.warningText}>내용을 입력해주세요.</Text>
           )}
           <View style={styles.colorContainer}>
-            {colorOptions.map((color, idx) => (
+            {options.map((color, idx) => (
               <Pressable
                 key={idx}
                 style={{
                   ...styles.colorButton,
                   backgroundColor: color,
-                  borderWidth: selecteColor === color ? 1.5 : 0,
+                  borderWidth: memoData.color === color ? 2 : 0,
                 }}
-                onPress={() => setSelectedColor(color)}
+                onPress={() => colorSelectHandler(color)}
               ></Pressable>
             ))}
           </View>

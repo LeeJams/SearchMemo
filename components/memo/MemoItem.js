@@ -5,7 +5,7 @@ function MemoItem(props) {
 
   return (
     <Pressable
-      onPress={() => props.openSelectPicker(props.item)}
+      onPress={() => props.openActionModal(props.item)}
       style={({ pressed }) => pressed && styles.pressed}
       android_ripple={{ color: "#878787" }}
     >

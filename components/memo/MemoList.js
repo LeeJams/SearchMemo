@@ -9,7 +9,7 @@ export default MemoList = ({ memos, openModal }) => {
       columnWrapperStyle={styles.wrapper}
       style={styles.memoListContainer}
       renderItem={(itemData) => {
-        return <MemoItem item={itemData.item} openSelectPicker={openModal} />;
+        return <MemoItem item={itemData.item} openActionModal={openModal} />;
       }}
       keyExtractor={(item) => {
         return item.id;
