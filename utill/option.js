@@ -21,6 +21,13 @@ export const actionOptions = [
     baseUrl: "https://search.naver.com/search.naver?query=",
   },
   {
+    label: "Bing",
+    icon: "microsoft",
+    key: "bing",
+    color: "#2FA4E7",
+    baseUrl: "https://www.bing.com/search?q=",
+  },
+  {
     label: "Pinterest",
     icon: "pinterest",
     key: "pinterest",
@@ -35,19 +42,19 @@ export const actionOptions = [
     baseUrl: "https://www.reddit.com/search/?q=",
   },
   {
-    label: "Copy",
+    label: "복사",
     icon: "copy",
     key: "copy",
     color: "#000",
   },
   {
-    label: "Edit",
+    label: "수정",
     icon: "edit",
     key: "edit",
     color: "#000",
   },
   {
-    label: "Delete",
+    label: "삭제",
     icon: "eraser",
     key: "delete",
     color: "#000",

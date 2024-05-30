@@ -16,7 +16,7 @@ const MemoActionModal = (props) => {
 
   const handleOptionPress = (option) => {
     if (option.key === "copy") {
-      Clipboard.setString(selectedMemo.text);
+      Clipboard.setStringAsync(selectedMemo.text);
     } else if (option.key === "edit") {
       props.modifyMemo(selectedMemo);
     } else if (option.key === "delete") {
