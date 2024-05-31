@@ -1,9 +1,10 @@
 import { StyleSheet, Text, View } from "react-native";
+import i18n from "../../locales/i18n";
 
 export default EmptyScreen = () => {
   return (
     <View style={styles.emptyScreenContainer}>
-      <Text style={styles.emptyScreenText}>메모를 추가해주세요.</Text>
+      <Text style={styles.emptyScreenText}>{i18n.t("memoEmpty")}</Text>
     </View>
   );
 };

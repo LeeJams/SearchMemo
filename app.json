@@ -2,7 +2,7 @@
   "expo": {
     "name": "서치메모",
     "slug": "searchmemo",
-    "version": "2.2.2",
+    "version": "2.3.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -24,7 +24,7 @@
         "backgroundColor": "#e1f3f5"
       },
       "package": "com.leejam.searchmemo",
-      "versionCode": 7
+      "versionCode": 8
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -35,12 +35,15 @@
       }
     },
     "plugins": [
-      "expo-build-properties",
-      {
-        "android": {
-          "enableProguardInReleaseBuilds": true
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "enableProguardInReleaseBuilds": true
+          }
         }
-      }
+      ],
+      "expo-localization"
     ]
   }
 }

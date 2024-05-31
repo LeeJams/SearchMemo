@@ -10,7 +10,7 @@ import { getCurrentDate, getMemos, storeMemos } from "../../utill/memo";
 export default MemoHome = () => {
   const [memos, setMemos] = useState([]);
   const [selectedMemo, setSelectedMemo] = useState(null);
-  const [modalIsVisible, setModalIsVisible] = useState(false);
+  const [isInputVisible, setIsInputVisible] = useState(false);
   const [isSelectPickerVisible, setIsSelectPickerVisible] = useState(false);
   const [isInitSetting, setIsInitSetting] = useState(false);
   const inputModalRef = useRef(null);
@@ -29,11 +29,11 @@ export default MemoHome = () => {
   }, [memos]);
 
   function openMemoInputModal() {
-    setModalIsVisible(true);
+    setIsInputVisible(true);
   }
 
   function closeMemoInputModal() {
-    setModalIsVisible(false);
+    setIsInputVisible(false);
   }
 
   function openMemoActionModal(memo) {
@@ -98,7 +98,7 @@ export default MemoHome = () => {
       </View>
       <AddButton onClick={openMemoInputModal} />
       <MemoInputModal
-        modalIsVisible={modalIsVisible}
+        visible={isInputVisible}
         closeModal={closeMemoInputModal}
         addMemo={addMemoHandler}
         modifyMemo={modifyMemoHandler}

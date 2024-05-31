@@ -1,3 +1,5 @@
+import i18n from "../locales/i18n";
+
 export const actionOptions = [
   {
     label: "Google",
@@ -42,19 +44,19 @@ export const actionOptions = [
     baseUrl: "https://www.reddit.com/search/?q=",
   },
   {
-    label: "복사",
+    label: i18n.t("copy"),
     icon: "copy",
     key: "copy",
     color: "#000",
   },
   {
-    label: "수정",
+    label: i18n.t("modify"),
     icon: "edit",
     key: "edit",
     color: "#000",
   },
   {
-    label: "삭제",
+    label: i18n.t("delete"),
     icon: "eraser",
     key: "delete",
     color: "#000",

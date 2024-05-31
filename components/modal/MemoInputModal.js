@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import CommonButton from "../ui/CommonButton";
 import { colorOptions } from "../../utill/option";
+import i18n from "../../locales/i18n";
 
 export default MemoInputModal = forwardRef((props, ref) => {
   const [isModify, setIsModify] = useState(false);
@@ -62,7 +63,7 @@ export default MemoInputModal = forwardRef((props, ref) => {
 
   return (
     <Modal
-      visible={props.modalIsVisible}
+      visible={props.visible}
       animationType="slide"
       transparent={true}
       onRequestClose={modalCloseHandler}
@@ -75,7 +76,7 @@ export default MemoInputModal = forwardRef((props, ref) => {
         <View style={styles.inputContainer}>
           <TextInput
             style={styles.textInput}
-            placeholder="메모를 입력해주세요."
+            placeholder={i18n.t("memoPlaceholder")}
             onChangeText={memoInputHandler}
             value={memoData.text}
             autoCapitalize="none"
@@ -83,7 +84,7 @@ export default MemoInputModal = forwardRef((props, ref) => {
             autoFocus={true}
           />
           {warning && (
-            <Text style={styles.warningText}>내용을 입력해주세요.</Text>
+            <Text style={styles.warningText}>{i18n.t("warning")}</Text>
           )}
           <View style={styles.colorContainer}>
             {options.map((color, idx) => (
@@ -100,10 +101,10 @@ export default MemoInputModal = forwardRef((props, ref) => {
           </View>
           <View style={styles.buttonContainer}>
             <CommonButton onPress={modalCloseHandler} name="cancel">
-              취소
+              {i18n.t("cancel")}
             </CommonButton>
             <CommonButton onPress={addMemoHandler} name="add">
-              {isModify ? "수정" : "추가"}
+              {isModify ? `${i18n.t("modify")}` : `${i18n.t("add")}`}
             </CommonButton>
           </View>
         </View>
