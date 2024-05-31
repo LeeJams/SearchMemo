@@ -24,7 +24,7 @@ const i18n = new I18n({
     memoEmpty: "메모를 추가해주세요.",
     memoPlaceholder: "메모를 입력해주세요.",
   },
-  cn: {
+  zh: {
     add: "添加",
     copy: "复制",
     delete: "删除",
@@ -34,7 +34,7 @@ const i18n = new I18n({
     memoEmpty: "请添加备忘录。",
     memoPlaceholder: "在此输入备忘录。",
   },
-  jp: {
+  ja: {
     add: "追加",
     copy: "コピー",
     delete: "削除",
@@ -47,14 +47,14 @@ const i18n = new I18n({
 });
 
 if (
-  deviceLanguage !== "en" &&
-  deviceLanguage !== "ko" &&
-  deviceLanguage !== "cn" &&
-  deviceLanguage !== "jp"
+  deviceLanguage === "en" ||
+  deviceLanguage === "ko" ||
+  deviceLanguage === "zh" ||
+  deviceLanguage === "ja"
 ) {
-  i18n.defaultLocale = "en";
+  i18n.locale = deviceLanguage;
 } else {
-  i18n.defaultLocale = deviceLanguage;
+  i18n.defaultLocale = "en";
 }
 
 export default i18n;

@@ -33,7 +33,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     marginHorizontal: 20,
     overflow: "hidden",
-    width: "30%",
+    width: "33%",
   },
   buttonInnerContainer: {
     elevation: 2,
