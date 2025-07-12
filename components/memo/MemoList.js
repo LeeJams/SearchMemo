@@ -1,23 +1,27 @@
 import { StyleSheet, FlatList } from "react-native";
 import MemoItem from "./MemoItem";
+import { useCallback } from "react";
 
-export default MemoList = ({ memos, openModal }) => {
+function MemoList({ memos, openModal }) {
+  const renderMemoItem = useCallback(
+    ({ item }) => <MemoItem item={item} openActionModal={openModal} />,
+    [openModal]
+  );
+
   return (
     <FlatList
       data={memos}
       numColumns={2}
       columnWrapperStyle={styles.wrapper}
       style={styles.memoListContainer}
-      renderItem={(itemData) => {
-        return <MemoItem item={itemData.item} openActionModal={openModal} />;
-      }}
-      keyExtractor={(item) => {
-        return item.id;
-      }}
+      renderItem={renderMemoItem}
+      keyExtractor={(item) => item.id.toString()}
       alwaysBounceVertical={false}
     />
   );
-};
+}
+
+export default MemoList;
 
 const styles = StyleSheet.create({
   memoListContainer: {

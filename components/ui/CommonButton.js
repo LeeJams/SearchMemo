@@ -1,42 +1,29 @@
-import { View, Text, Pressable, StyleSheet } from "react-native";
+import { Text, Pressable, StyleSheet } from "react-native";
+import React from "react";
 
-export default CommonButton = ({ children, onPress, name }) => {
+function CommonButton({ children, onPress, style, textStyle }) {
   return (
-    <View style={styles.buttonOuterContainer}>
-      <Pressable
-        style={({ pressed }) =>
-          pressed
-            ? [styles.buttonInnerContainer, styles.pressed]
-            : [
-                styles.buttonInnerContainer,
-                name === "add" ? styles.add : styles.cancel,
-              ]
-        }
-        onPress={onPress}
-        android_ripple={{ color: "#878787" }}
-      >
-        <Text
-          style={[
-            styles.buttonText,
-            name === "add" ? styles.add : styles.cancel,
-          ]}
-        >
-          {children}
-        </Text>
-      </Pressable>
-    </View>
+    <Pressable
+      style={({ pressed }) => [styles.button, style, pressed && styles.pressed]}
+      onPress={onPress}
+      android_ripple={{ color: "#878787" }}
+    >
+      <Text style={[styles.buttonText, textStyle]}>{children}</Text>
+    </Pressable>
   );
-};
+}
+
+export default React.memo(CommonButton);
 
 const styles = StyleSheet.create({
-  buttonOuterContainer: {
+  button: {
     borderRadius: 20,
     marginHorizontal: 20,
     overflow: "hidden",
     width: "33%",
-  },
-  buttonInnerContainer: {
     elevation: 2,
+    borderWidth: 1,
+    borderColor: "#e1e1e3",
   },
   buttonText: {
     textAlign: "center",
@@ -44,20 +31,9 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     paddingVertical: 8,
     paddingHorizontal: 16,
-    borderColor: "#e1e1e3",
-    borderWidth: 1,
-    borderRadius: 20,
     fontFamily: "NotoSansKR",
   },
   pressed: {
     opacity: 0.75,
-  },
-  add: {
-    backgroundColor: "#e1e1e3",
-    color: "#000",
-  },
-  cancel: {
-    backgroundColor: "#fff",
-    color: "#000",
   },
 });

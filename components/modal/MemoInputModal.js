@@ -7,12 +7,16 @@ import {
   Text,
   KeyboardAvoidingView,
   Pressable,
+  Platform,
 } from "react-native";
+import { Feather } from "@expo/vector-icons";
 import CommonButton from "../ui/CommonButton";
 import { colorOptions } from "../../utill/option";
 import i18n from "../../locales/i18n";
+import { useTheme } from "../../hooks/useTheme";
 
-export default MemoInputModal = forwardRef((props, ref) => {
+const MemoInputModal = forwardRef((props, ref) => {
+  const { theme } = useTheme();
   const [isModify, setIsModify] = useState(false);
   const [warning, setWarning] = useState(false);
   const [memoData, setMemoData] = useState({
@@ -47,8 +51,11 @@ export default MemoInputModal = forwardRef((props, ref) => {
       setWarning(true);
       return;
     }
-    if (isModify) props.modifyMemo(memoData);
-    else props.addMemo(memoData);
+    if (isModify) {
+      props.modifyMemo(memoData);
+    } else {
+      props.addMemo(memoData);
+    }
     modalCloseHandler();
   }
 
@@ -68,20 +75,37 @@ export default MemoInputModal = forwardRef((props, ref) => {
       transparent={true}
       onRequestClose={modalCloseHandler}
     >
-      <KeyboardAvoidingView behavior="padding" style={styles.modalOverlay}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={styles.modalOverlay}
+      >
         <Pressable
           onPress={modalCloseHandler}
           style={styles.modalPressOverlay}
         ></Pressable>
-        <View style={styles.inputContainer}>
+        <View
+          style={[
+            styles.inputContainer,
+            { backgroundColor: theme.backgroundSecondary },
+          ]}
+        >
           <TextInput
-            style={styles.textInput}
+            style={[
+              styles.textInput,
+              {
+                backgroundColor: theme.textInputBG,
+                color: theme.text,
+                borderColor: theme.border,
+              },
+            ]}
             placeholder={i18n.t("memoPlaceholder")}
+            placeholderTextColor={theme.textSecondary}
             onChangeText={memoInputHandler}
             value={memoData.text}
             autoCapitalize="none"
             autoCorrect={false}
             autoFocus={true}
+            multiline={true}
           />
           {warning && (
             <Text style={styles.warningText}>{i18n.t("warning")}</Text>
@@ -90,20 +114,48 @@ export default MemoInputModal = forwardRef((props, ref) => {
             {options.map((color, idx) => (
               <Pressable
                 key={idx}
-                style={{
-                  ...styles.colorButton,
-                  backgroundColor: color,
-                  borderWidth: memoData.color === color ? 2 : 0,
-                }}
+                style={[
+                  styles.colorButton,
+                  {
+                    backgroundColor: color,
+                  },
+                ]}
                 onPress={() => colorSelectHandler(color)}
-              ></Pressable>
+              >
+                {memoData.color === color && (
+                  <Feather name="check" size={18} color={theme.text} />
+                )}
+              </Pressable>
             ))}
           </View>
           <View style={styles.buttonContainer}>
-            <CommonButton onPress={modalCloseHandler} name="cancel">
+            <CommonButton
+              onPress={modalCloseHandler}
+              style={[
+                styles.cancelButton,
+                {
+                  backgroundColor: theme.cancelButtonBG,
+                  borderWidth: 0,
+                },
+              ]}
+              textStyle={[
+                styles.cancelButtonText,
+                { color: theme.cancelButtonText },
+              ]}
+            >
               {i18n.t("cancel")}
             </CommonButton>
-            <CommonButton onPress={addMemoHandler} name="add">
+            <CommonButton
+              onPress={addMemoHandler}
+              style={[
+                styles.addButton,
+                {
+                  backgroundColor: theme.addButton,
+                  borderWidth: 0,
+                },
+              ]}
+              textStyle={[styles.addButtonText, { color: theme.addButtonText }]}
+            >
               {isModify ? `${i18n.t("modify")}` : `${i18n.t("add")}`}
             </CommonButton>
           </View>
@@ -113,39 +165,43 @@ export default MemoInputModal = forwardRef((props, ref) => {
   );
 });
 
+export default MemoInputModal;
+
 const styles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
+    justifyContent: "flex-end",
   },
   modalPressOverlay: {
     flex: 1,
   },
   inputContainer: {
-    position: "absolute",
     width: "100%",
-    padding: 16,
-    bottom: 0,
-    alignItems: "center",
-    backgroundColor: "#fff",
-    shadowOpacity: 0.25,
+    padding: 20,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: -2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
     elevation: 10,
   },
   textInput: {
-    borderWidth: 1,
-    borderColor: "#ececec",
-    backgroundColor: "#ececec",
-    color: "#120438",
-    borderRadius: 6,
+    borderRadius: 10,
     width: "100%",
     padding: 16,
+    minHeight: 100,
+    textAlignVertical: "top",
+    marginBottom: 10,
+    borderWidth: 1,
   },
   buttonContainer: {
     flexDirection: "row",
-    marginTop: 10,
-  },
-  button: {
-    width: 100,
-    marginHorizontal: 10,
+    justifyContent: "space-between",
+    marginTop: 20,
   },
   warningText: {
     alignSelf: "flex-start",
@@ -157,13 +213,27 @@ const styles = StyleSheet.create({
   colorContainer: {
     flexDirection: "row",
     marginVertical: 10,
+    justifyContent: "space-around",
   },
   colorButton: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    borderColor: "#000",
+    width: 35,
+    height: 35,
+    borderRadius: 17.5,
     marginHorizontal: 10,
-    backgroundColor: "#ececec",
+    justifyContent: "center",
+    alignItems: "center",
   },
+  addButton: {
+    flex: 1,
+    marginLeft: 10,
+    borderRadius: 10,
+  },
+  addButtonText: {
+    fontWeight: "bold",
+  },
+  cancelButton: {
+    flex: 1,
+    borderRadius: 10,
+  },
+  cancelButtonText: {},
 });

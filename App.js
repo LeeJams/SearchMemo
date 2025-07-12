@@ -1,24 +1,24 @@
 import MemoHome from "./components/memo/MemoHome";
-import { useEffect, useState } from "react";
-import * as Font from "expo-font";
+import { useFonts } from "expo-font";
+import "react-native-gesture-handler";
+import { SafeAreaProvider } from "react-native-safe-area-context";
+import { ThemeProvider } from "./hooks/useTheme";
 
 export default function App() {
-  const [fontLoaded, setFontLoaded] = useState(false);
+  const [fontsLoaded] = useFonts({
+    NotoSansKR: require("./assets/fonts/NotoSansKR-Medium.ttf"),
+    "NotoSansKR-Regular": require("./assets/fonts/NotoSansKR-Regular.ttf"),
+  });
 
-  useEffect(() => {
-    const fontsLoaded = async () => {
-      await Font.loadAsync({
-        NotoSansKR: require("./assets/fonts/NotoSansKR-Medium.ttf"),
-      });
-
-      setFontLoaded(true);
-    };
-    fontsLoaded();
-  }, []);
-
-  if (!fontLoaded) {
+  if (!fontsLoaded) {
     return null;
   }
 
-  return <MemoHome />;
+  return (
+    <SafeAreaProvider>
+      <ThemeProvider>
+        <MemoHome />
+      </ThemeProvider>
+    </SafeAreaProvider>
+  );
 }

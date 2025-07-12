@@ -1,37 +1,52 @@
-import { StyleSheet, View, Text, Pressable, Dimensions } from "react-native";
+import {
+  StyleSheet,
+  View,
+  Text,
+  Pressable,
+  useWindowDimensions,
+} from "react-native";
+import React from "react";
+import { useTheme } from "../../hooks/useTheme";
 
-function MemoItem(props) {
-  const { text, date, color } = props.item;
+function MemoItem({ item, openActionModal }) {
+  const { theme } = useTheme();
+  const { text, date, color } = item;
+  const { width } = useWindowDimensions();
+  const memoWidth = (width - 13) / 2;
 
   return (
     <Pressable
-      onPress={() => props.openActionModal(props.item)}
+      onPress={() => openActionModal(item)}
       style={({ pressed }) => pressed && styles.pressed}
-      android_ripple={{ color: "#878787" }}
+      android_ripple={{ color: theme.textSecondary }}
     >
-      <View style={styles.memoContainer}>
-        <Text style={styles.memoText}>{text}</Text>
-        <Text style={styles.dateText}>{date}</Text>
-        <View
-          style={{ ...styles.containerBadge, backgroundColor: color }}
-        ></View>
+      <View
+        style={[
+          styles.memoContainer,
+          {
+            width: memoWidth,
+            backgroundColor: theme.backgroundSecondary,
+            borderColor: theme.border,
+          },
+        ]}
+      >
+        <Text style={[styles.memoText, { color: theme.text }]}>{text}</Text>
+        <Text style={[styles.dateText, { color: theme.textSecondary }]}>
+          {date}
+        </Text>
+        <View style={[styles.containerBadge, { backgroundColor: color }]} />
       </View>
     </Pressable>
   );
 }
 
-export default MemoItem;
-
-const width = Dimensions.get("window").width - 13;
+export default React.memo(MemoItem);
 
 const styles = StyleSheet.create({
   memoContainer: {
-    width: width / 2,
     marginBottom: 5,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: "#eee",
-    backgroundColor: "#fff",
     elevation: 2,
     shadowOpacity: 0.3,
     shadowOffset: {
@@ -50,7 +65,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     paddingHorizontal: 10,
     alignSelf: "flex-end",
-    color: "#9c9c9ca6",
   },
   pressed: {
     opacity: 0.5,

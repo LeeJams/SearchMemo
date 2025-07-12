@@ -1,23 +1,28 @@
-import { StyleSheet, Text, View } from "react-native";
+import { View, Text, StyleSheet } from "react-native";
+import { useTheme } from "../../hooks/useTheme";
 import i18n from "../../locales/i18n";
 
-export default EmptyScreen = () => {
+function EmptyScreen() {
+  const { theme } = useTheme();
   return (
-    <View style={styles.emptyScreenContainer}>
-      <Text style={styles.emptyScreenText}>{i18n.t("memoEmpty")}</Text>
+    <View style={styles.container}>
+      <Text style={[styles.text, { color: theme.textSecondary }]}>
+        {i18n.t("memoEmpty")}
+      </Text>
     </View>
   );
-};
+}
+
+export default EmptyScreen;
 
 const styles = StyleSheet.create({
-  emptyScreenContainer: {
+  container: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
   },
-  emptyScreenText: {
-    fontSize: 20,
-    color: "#000000bf",
+  text: {
+    fontSize: 16,
     fontFamily: "NotoSansKR",
   },
 });

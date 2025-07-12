@@ -1,132 +1,190 @@
-import { StyleSheet, View, SafeAreaView, Platform } from "react-native";
+import { StyleSheet, View, Platform, Text, Pressable } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import MemoInputModal from "../modal/MemoInputModal";
 import MemoActionModal from "../modal/MemoActionModal";
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState } from "react";
 import MemoList from "./MemoList";
-import AddButton from "../ui/AddButton";
 import EmptyScreen from "../ui/EmptyScreen";
-import { getCurrentDate, getMemos, storeMemos } from "../../utill/memo";
+import { useMemos } from "../../hooks/useMemos";
+import { Feather, AntDesign } from "@expo/vector-icons";
+import RightSheet from "../modal/RightSheet";
+import { useTheme } from "../../hooks/useTheme";
+import i18n from "../../locales/i18n";
 
-export default MemoHome = () => {
-  const [memos, setMemos] = useState([]);
-  const [selectedMemo, setSelectedMemo] = useState(null);
-  const [isInputVisible, setIsInputVisible] = useState(false);
-  const [isSelectPickerVisible, setIsSelectPickerVisible] = useState(false);
-  const [isInitSetting, setIsInitSetting] = useState(false);
+export default function MemoHome() {
+  const { theme } = useTheme();
+  const {
+    memos,
+    isInit,
+    addMemo,
+    updateMemo,
+    deleteMemo: deleteMemoHandler,
+  } = useMemos();
+  const [modalState, setModalState] = useState({
+    inputVisible: false,
+    actionVisible: false,
+    selectedMemo: null,
+  });
+  const [isSettingsVisible, setSettingsVisible] = useState(false);
   const inputModalRef = useRef(null);
 
-  useEffect(() => {
-    getMemos().then((memos) => {
-      if (memos?.length) {
-        setMemos(memos);
-      }
-      setIsInitSetting(true);
+  const openInputModal = () =>
+    setModalState((prev) => ({ ...prev, inputVisible: true }));
+  const closeInputModal = () =>
+    setModalState((prev) => ({ ...prev, inputVisible: false }));
+
+  const openActionModal = (memo) =>
+    setModalState({
+      actionVisible: true,
+      selectedMemo: memo,
+      inputVisible: false,
     });
-  }, []);
+  const closeActionModal = () =>
+    setModalState((prev) => ({
+      ...prev,
+      actionVisible: false,
+      selectedMemo: null,
+    }));
 
-  useEffect(() => {
-    storeMemos(memos);
-  }, [memos]);
+  const handleDeleteMemo = () => {
+    if (modalState.selectedMemo) {
+      deleteMemoHandler(modalState.selectedMemo.id);
+      closeActionModal();
+    }
+  };
 
-  function openMemoInputModal() {
-    setIsInputVisible(true);
-  }
+  const handleModifyMemo = () => {
+    if (modalState.selectedMemo) {
+      inputModalRef.current.modifyMemoHandler(modalState.selectedMemo);
+      closeActionModal();
+      openInputModal();
+    }
+  };
 
-  function closeMemoInputModal() {
-    setIsInputVisible(false);
-  }
-
-  function openMemoActionModal(memo) {
-    setIsSelectPickerVisible(true);
-    setSelectedMemo(memo);
-  }
-
-  function closeSelectPickerModal() {
-    setIsSelectPickerVisible(false);
-  }
-
-  function addMemoHandler(memoData) {
-    setMemos((currentMemos) => [
-      {
-        text: memoData.text.trim(),
-        id: Date.now(),
-        date: getCurrentDate(),
-        color: memoData.color,
-      },
-      ...currentMemos,
-    ]);
-  }
-
-  function modifyMemoHandler(memoData) {
-    setMemos((currentMemos) => {
-      return currentMemos.map((memo) => {
-        if (memo.id === memoData.id) {
-          return {
-            id: memo.id,
-            text: memoData.text.trim(),
-            date: getCurrentDate(),
-            color: memoData.color,
-          };
-        } else {
-          return memo;
-        }
-      });
-    });
-  }
-
-  function deleteMemo(id) {
-    setMemos((currentMemos) => {
-      return currentMemos.filter((memo) => memo.id !== id);
-    });
-    closeSelectPickerModal();
-  }
-
-  function modifyMemo(memo) {
-    inputModalRef.current.modifyMemoHandler(memo);
-    openMemoInputModal();
-    closeSelectPickerModal();
-  }
+  const openSettings = () => setSettingsVisible(true);
+  const closeSettings = () => setSettingsVisible(false);
 
   return (
-    <SafeAreaView style={styles.appContainer}>
-      <View style={styles.memosContainer}>
-        {memos.length === 0 && isInitSetting ? (
+    <SafeAreaView
+      style={[styles.appContainer, { backgroundColor: theme.background }]}
+    >
+      <View
+        style={[styles.memosContainer, { backgroundColor: theme.background }]}
+      >
+        {memos.length === 0 && isInit ? (
           <EmptyScreen />
         ) : (
-          <MemoList memos={memos} openModal={openMemoActionModal} />
+          <MemoList memos={memos} openModal={openActionModal} />
         )}
       </View>
-      <AddButton onClick={openMemoInputModal} />
+
+      {/* 플로팅 버튼 컨테이너 */}
+      <View style={styles.floatingButtonContainer}>
+        {/* 메모 작성 버튼 (길게) */}
+        <Pressable
+          style={({ pressed }) => [
+            styles.addButtonLong,
+            { backgroundColor: theme.addButton },
+            pressed && styles.pressed,
+          ]}
+          onPress={openInputModal}
+        >
+          <AntDesign name="plus" size={18} color={theme.addButtonText} />
+          <Text style={[styles.buttonText, { color: theme.addButtonText }]}>
+            {i18n.t("writeMemo")}
+          </Text>
+        </Pressable>
+
+        {/* 설정 버튼 (작게) */}
+        <Pressable
+          style={({ pressed }) => [
+            styles.settingsButton,
+            { backgroundColor: theme.backgroundSecondary },
+            pressed && styles.pressed,
+          ]}
+          onPress={openSettings}
+        >
+          <Feather name="settings" size={16} color={theme.icon} />
+        </Pressable>
+      </View>
+
       <MemoInputModal
-        visible={isInputVisible}
-        closeModal={closeMemoInputModal}
-        addMemo={addMemoHandler}
-        modifyMemo={modifyMemoHandler}
+        visible={modalState.inputVisible}
+        closeModal={closeInputModal}
+        addMemo={addMemo}
+        modifyMemo={updateMemo}
         ref={inputModalRef}
       />
       <MemoActionModal
-        visible={isSelectPickerVisible}
-        closeModal={closeSelectPickerModal}
-        deleteMemo={deleteMemo}
-        modifyMemo={modifyMemo}
-        selectedMemo={selectedMemo}
+        visible={modalState.actionVisible}
+        closeModal={closeActionModal}
+        deleteMemo={handleDeleteMemo}
+        modifyMemo={handleModifyMemo}
+        selectedMemo={modalState.selectedMemo}
       />
+      <RightSheet visible={isSettingsVisible} onClose={closeSettings} />
     </SafeAreaView>
   );
-};
+}
 
 const styles = StyleSheet.create({
   appContainer: {
     flex: 1,
-    paddingTop: Platform.OS === "android" ? 45 : 0,
-    backgroundColor: "#e8e8e8",
   },
   memosContainer: {
     flex: 1,
     flexGrow: 1,
     flexDirection: "row",
   },
-  memoListContainer: {
+  floatingButtonContainer: {
+    position: "absolute",
+    bottom: 30,
+    left: 20,
+    right: 20,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  addButtonLong: {
     flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 25,
+    gap: 6,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  buttonText: {
+    fontSize: 14,
+    fontWeight: "600",
+    fontFamily: "NotoSansKR-Medium",
+  },
+  settingsButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.15,
+    shadowRadius: 3.84,
+    elevation: 3,
+  },
+  pressed: {
+    opacity: 0.8,
+    transform: [{ scale: 0.96 }],
   },
 });
