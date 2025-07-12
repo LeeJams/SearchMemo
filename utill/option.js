@@ -9,35 +9,30 @@ export const allSearchOptions = [
   {
     label: "Google",
     key: "google",
-    color: "#0357c4",
     baseUrl: "https://www.google.com/search?q=",
     region: "global",
   },
   {
     label: "Youtube",
     key: "youtube",
-    color: "#FF0000",
     baseUrl: "https://www.youtube.com/results?search_query=",
     region: "global",
   },
   {
     label: "Bing",
     key: "bing",
-    color: "#2FA4E7",
     baseUrl: "https://www.bing.com/search?q=",
     region: "global",
   },
   {
     label: "Pinterest",
     key: "pinterest",
-    color: "#FF0000",
     baseUrl: "https://www.pinterest.co.kr/search/pins/?q=",
     region: "global",
   },
   {
     label: "Reddit",
     key: "reddit",
-    color: "#ff4500",
     baseUrl: "https://www.reddit.com/search/?q=",
     region: "global",
   },
@@ -45,7 +40,6 @@ export const allSearchOptions = [
   {
     label: "ChatGPT",
     key: "chatgpt",
-    color: "#10a37f",
     baseUrl: "https://chat.openai.com",
     region: "ai",
     copyToClipboard: true, // 클립보드 복사 필요
@@ -53,7 +47,6 @@ export const allSearchOptions = [
   {
     label: "Claude",
     key: "claude",
-    color: "#6b46c1",
     baseUrl: "https://claude.ai",
     region: "ai",
     copyToClipboard: true, // 클립보드 복사 필요
@@ -61,7 +54,6 @@ export const allSearchOptions = [
   {
     label: "Gemini",
     key: "gemini",
-    color: "#4285f4",
     baseUrl: "https://gemini.google.com",
     region: "ai",
     copyToClipboard: true, // 클립보드 복사 필요
@@ -69,7 +61,6 @@ export const allSearchOptions = [
   {
     label: "Grok",
     key: "grok",
-    color: "#000000",
     baseUrl: "https://x.com/i/grok",
     region: "ai",
     copyToClipboard: true, // 클립보드 복사 필요
@@ -77,7 +68,6 @@ export const allSearchOptions = [
   {
     label: "Perplexity",
     key: "perplexity",
-    color: "#20bdb8",
     baseUrl: "https://www.perplexity.ai",
     region: "ai",
     copyToClipboard: true, // 클립보드 복사 필요
@@ -86,14 +76,12 @@ export const allSearchOptions = [
   {
     label: "Naver",
     key: "naver",
-    color: "#03c75a",
     baseUrl: "https://search.naver.com/search.naver?query=",
     region: "kr",
   },
   {
     label: "Daum",
     key: "daum",
-    color: "#ed7a00",
     baseUrl: "https://search.daum.net/search?q=",
     region: "kr",
   },
@@ -101,7 +89,6 @@ export const allSearchOptions = [
   {
     label: "Baidu",
     key: "baidu",
-    color: "#2932e1",
     baseUrl: "https://www.baidu.com/s?wd=",
     region: "cn",
   },
@@ -109,7 +96,6 @@ export const allSearchOptions = [
   {
     label: "Yahoo JP",
     key: "yahoojp",
-    color: "#ff0033",
     baseUrl: "https://search.yahoo.co.jp/search?p=",
     region: "jp",
   },
@@ -117,7 +103,6 @@ export const allSearchOptions = [
   {
     label: "Yandex",
     key: "yandex",
-    color: "#fc3f1d",
     baseUrl: "https://yandex.com/search/?text=",
     region: "ru",
   },
@@ -125,14 +110,12 @@ export const allSearchOptions = [
   {
     label: "DuckDuckGo",
     key: "duckduckgo",
-    color: "#de5833",
     baseUrl: "https://duckduckgo.com/?q=",
     region: "us",
   },
   {
     label: "Yahoo",
     key: "yahoo",
-    color: "#720e9e",
     baseUrl: "https://search.yahoo.com/search?p=",
     region: "us",
   },
@@ -140,7 +123,6 @@ export const allSearchOptions = [
   {
     label: "Google India",
     key: "googlein",
-    color: "#0357c4",
     baseUrl: "https://www.google.co.in/search?q=",
     region: "in",
   },
@@ -148,14 +130,13 @@ export const allSearchOptions = [
   {
     label: "Ecosia",
     key: "ecosia",
-    color: "#088a4b",
     baseUrl: "https://www.ecosia.org/search?method=index&q=",
     region: "de",
   },
 ];
 
 // 액션 옵션들 (복사, 수정, 삭제)
-export const fixedActionOptions = [
+export const getFixedActionOptions = () => [
   {
     label: i18n.t("copy"),
     key: "copy",
@@ -174,8 +155,8 @@ export const fixedActionOptions = [
 export const defaultSelectedSearchOptions = [
   "google",
   "youtube",
+  "bing",
   "chatgpt",
-  "claude",
   "gemini",
   "perplexity",
 ];
@@ -185,7 +166,7 @@ export const actionOptions = [
   ...allSearchOptions.filter((opt) =>
     defaultSelectedSearchOptions.includes(opt.key)
   ),
-  ...fixedActionOptions,
+  ...getFixedActionOptions(),
 ];
 
 export const colorOptions = [
@@ -235,7 +216,7 @@ export const getActionOptions = async () => {
     const selectedSearchOptions = allSearchOptions.filter((opt) =>
       selectedKeys.includes(opt.key)
     );
-    return [...selectedSearchOptions, ...fixedActionOptions];
+    return [...selectedSearchOptions, ...getFixedActionOptions()];
   } catch (error) {
     console.error("Failed to get action options:", error);
     return actionOptions; // 기본값 반환

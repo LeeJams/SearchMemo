@@ -1,4 +1,4 @@
-import { StyleSheet, View, Platform, Text, Pressable } from "react-native";
+import { StyleSheet, View, Text, Pressable } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import MemoInputModal from "../modal/MemoInputModal";
 import MemoActionModal from "../modal/MemoActionModal";

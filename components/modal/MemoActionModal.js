@@ -9,7 +9,7 @@ import {
   ScrollView,
 } from "react-native";
 import * as Clipboard from "expo-clipboard";
-import { getActionOptions, fixedActionOptions } from "../../utill/option";
+import { getActionOptions, getFixedActionOptions } from "../../utill/option";
 import React, { useState, useEffect } from "react";
 import { useTheme } from "../../hooks/useTheme";
 import { searchIconMap } from "../icons/SearchIcons";
@@ -38,8 +38,9 @@ function MemoActionModal({
       setLoading(true);
       const options = await getActionOptions();
       // fixedActionOptions를 제외한 검색 옵션만 필터링
+      const fixedOptions = getFixedActionOptions();
       const searchOpts = options.filter(
-        (opt) => !fixedActionOptions.some((fixed) => fixed.key === opt.key)
+        (opt) => !fixedOptions.some((fixed) => fixed.key === opt.key)
       );
       setSearchOptions(searchOpts);
     } catch (error) {
@@ -158,7 +159,9 @@ function MemoActionModal({
                   { borderTopColor: theme.border },
                 ]}
               >
-                {fixedActionOptions.map((option) => renderOption(option, true))}
+                {getFixedActionOptions().map((option) =>
+                  renderOption(option, true)
+                )}
               </View>
             </>
           )}
