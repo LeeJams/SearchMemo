@@ -58,6 +58,30 @@ export const allSearchOptions = [
     region: "ai",
     copyToClipboard: true, // 클립보드 복사 필요
   },
+  {
+    label: "Gemini",
+    key: "gemini",
+    color: "#4285f4",
+    baseUrl: "https://gemini.google.com",
+    region: "ai",
+    copyToClipboard: true, // 클립보드 복사 필요
+  },
+  {
+    label: "Grok",
+    key: "grok",
+    color: "#000000",
+    baseUrl: "https://x.com/i/grok",
+    region: "ai",
+    copyToClipboard: true, // 클립보드 복사 필요
+  },
+  {
+    label: "Perplexity",
+    key: "perplexity",
+    color: "#20bdb8",
+    baseUrl: "https://www.perplexity.ai",
+    region: "ai",
+    copyToClipboard: true, // 클립보드 복사 필요
+  },
   // 한국
   {
     label: "Naver",
@@ -150,10 +174,10 @@ export const fixedActionOptions = [
 export const defaultSelectedSearchOptions = [
   "google",
   "youtube",
-  "naver",
-  "bing",
-  "pinterest",
-  "reddit",
+  "chatgpt",
+  "claude",
+  "gemini",
+  "perplexity",
 ];
 
 // 기존 actionOptions (호환성을 위해 유지, 나중에 deprecated)

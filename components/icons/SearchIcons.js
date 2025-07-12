@@ -7,6 +7,7 @@ import {
   Rect,
   Defs,
   LinearGradient,
+  RadialGradient,
   Stop,
   ClipPath,
 } from "react-native-svg";
@@ -155,10 +156,11 @@ export const ClaudeIcon = ({ size = 24, color }) => (
 
 // Naver
 export const NaverIcon = ({ size = 24, color }) => (
-  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+  <Svg width={size} height={size} viewBox="0 0 32 32" fill="none">
     <Path
-      d="M16.273 12.845L7.376 0H0v24h7.726V11.156L16.624 24H24V0h-7.727v12.845z"
+      d="M20.36 16.56L13.17 4H4v24h7.73V16.21L19.83 28H28V4h-7.73v12.56z"
       fill="#03C75A"
+      transform="translate(2, 2)"
     />
   </Svg>
 );
@@ -336,6 +338,59 @@ export const DeleteIcon = ({ size = 24, color = "#000" }) => (
   </Svg>
 );
 
+// Gemini
+export const GeminiIcon = ({ size = 24, color }) => (
+  <Svg width={size} height={size} viewBox="0 0 16 16" fill="none">
+    <Defs>
+      <RadialGradient
+        id="gemini-gradient"
+        cx="0"
+        cy="0"
+        r="1"
+        gradientUnits="userSpaceOnUse"
+        gradientTransform="matrix(16.1326 5.4553 -43.70045 129.2322 1.588 6.503)"
+      >
+        <Stop offset="0.067" stopColor="#9168C0" />
+        <Stop offset="0.343" stopColor="#5684D1" />
+        <Stop offset="0.672" stopColor="#1BA1E3" />
+      </RadialGradient>
+    </Defs>
+    <Path
+      d="M16 8.016A8.522 8.522 0 008.016 16h-.032A8.521 8.521 0 000 8.016v-.032A8.521 8.521 0 007.984 0h.032A8.522 8.522 0 0016 7.984v.032z"
+      fill="url(#gemini-gradient)"
+    />
+  </Svg>
+);
+
+// Grok
+export const GrokIcon = ({ size = 24, color }) => (
+  <Svg width={size} height={size} viewBox="0 0 512 509.641" fill="none">
+    <Path
+      d="M115.612 0h280.776C459.975 0 512 52.026 512 115.612v278.416c0 63.587-52.025 115.613-115.612 115.613H115.612C52.026 509.641 0 457.615 0 394.028V115.612C0 52.026 52.026 0 115.612 0z"
+      fill="#000"
+    />
+    <Path
+      fill="#fff"
+      d="M213.235 306.019l178.976-180.002v.169l51.695-51.763c-.924 1.32-1.86 2.605-2.785 3.89-39.281 54.164-58.46 80.649-43.07 146.922l-.09-.101c10.61 45.11-.744 95.137-37.398 131.836-46.216 46.306-120.167 56.611-181.063 14.928l42.462-19.675c38.863 15.278 81.392 8.57 111.947-22.03 30.566-30.6 37.432-75.159 22.065-112.252-2.92-7.025-11.67-8.795-17.792-4.263l-124.947 92.341zm-25.786 22.437l-.033.034L68.094 435.217c7.565-10.429 16.957-20.294 26.327-30.149 26.428-27.803 52.653-55.359 36.654-94.302-21.422-52.112-8.952-113.177 30.724-152.898 41.243-41.287 103.708-53.757 155.865-32.335 38.863 15.967 66.11 56.578 62.132 99.159-.596 6.373-8.571 9.657-13.95 5.87l-109.581-77.16z"
+    />
+  </Svg>
+);
+
+// Perplexity
+export const PerplexityIcon = ({ size = 24, color }) => (
+  <Svg width={size} height={size} viewBox="0 0 512 509.64" fill="none">
+    <Path
+      fill="#1F1F1F"
+      d="M115.613 0h280.774C459.974 0 512 52.025 512 115.612v278.415c0 63.587-52.026 115.613-115.613 115.613H115.613C52.026 509.64 0 457.614 0 394.027V115.612C0 52.025 52.026 0 115.613 0z"
+    />
+    <Path
+      fill="#fff"
+      fillRule="nonzero"
+      d="M348.851 128.063l-68.946 58.302h68.946v-58.302zm-83.908 48.709l100.931-85.349v94.942h32.244v143.421h-38.731v90.004l-94.442-86.662v83.946h-17.023v-83.906l-96.596 86.246v-89.628h-37.445V186.365h38.732V90.768l95.309 84.958v-83.16h17.023l-.002 84.206zm-29.209 26.616c-34.955.02-69.893 0-104.83 0v109.375h20.415v-27.121l84.415-82.254zm41.445 0l82.208 82.324v27.051h21.708V203.388c-34.617 0-69.274.02-103.916 0zm-42.874-17.023l-64.669-57.646v57.646h64.669z"
+    />
+  </Svg>
+);
+
 // Map icon keys to components
 export const searchIconMap = {
   google: GoogleIcon,
@@ -345,6 +400,9 @@ export const searchIconMap = {
   reddit: RedditIcon,
   chatgpt: ChatGPTIcon,
   claude: ClaudeIcon,
+  gemini: GeminiIcon,
+  grok: GrokIcon,
+  perplexity: PerplexityIcon,
   naver: NaverIcon,
   daum: DaumIcon,
   baidu: BaiduIcon,
