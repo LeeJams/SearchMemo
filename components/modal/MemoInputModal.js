@@ -15,6 +15,8 @@ import { colorOptions } from "../../utill/option";
 import i18n from "../../locales/i18n";
 import { useTheme } from "../../hooks/useTheme";
 
+const { DEFAULT_MEMO_COLOR } = require("../../utill/memoModel");
+
 const MemoInputModal = forwardRef((props, ref) => {
   const { theme } = useTheme();
   const [isModify, setIsModify] = useState(false);
@@ -22,7 +24,7 @@ const MemoInputModal = forwardRef((props, ref) => {
   const [memoData, setMemoData] = useState({
     id: null,
     text: "",
-    color: "#e6e6e6",
+    color: DEFAULT_MEMO_COLOR,
     date: "",
   });
 
@@ -60,7 +62,7 @@ const MemoInputModal = forwardRef((props, ref) => {
   }
 
   function modalCloseHandler() {
-    setMemoData({ id: null, text: "", color: "#e6e6e6", date: "" });
+    setMemoData({ id: null, text: "", color: DEFAULT_MEMO_COLOR, date: "" });
     setIsModify(false);
     setWarning(false);
     props.closeModal();
@@ -106,6 +108,8 @@ const MemoInputModal = forwardRef((props, ref) => {
             autoCorrect={false}
             autoFocus={true}
             multiline={true}
+            maxLength={500}
+            accessibilityLabel={i18n.t("memoPlaceholder")}
           />
           {warning && (
             <Text style={styles.warningText}>{i18n.t("warning")}</Text>
@@ -121,6 +125,9 @@ const MemoInputModal = forwardRef((props, ref) => {
                   },
                 ]}
                 onPress={() => colorSelectHandler(color)}
+                accessibilityRole="button"
+                accessibilityState={{ selected: memoData.color === color }}
+                accessibilityLabel={`Color ${idx + 1}`}
               >
                 {memoData.color === color && (
                   <Feather name="check" size={18} color={theme.text} />

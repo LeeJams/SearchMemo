@@ -1,8 +1,8 @@
-import { StyleSheet, View, Text, Pressable } from "react-native";
+import { Alert, StyleSheet, View, Text, Pressable } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import MemoInputModal from "../modal/MemoInputModal";
 import MemoActionModal from "../modal/MemoActionModal";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import MemoList from "./MemoList";
 import EmptyScreen from "../ui/EmptyScreen";
 import { useMemos } from "../../hooks/useMemos";
@@ -19,6 +19,7 @@ export default function MemoHome() {
     addMemo,
     updateMemo,
     deleteMemo: deleteMemoHandler,
+    storageError,
   } = useMemos();
   const [modalState, setModalState] = useState({
     inputVisible: false,
@@ -27,6 +28,12 @@ export default function MemoHome() {
   });
   const [isSettingsVisible, setSettingsVisible] = useState(false);
   const inputModalRef = useRef(null);
+
+  useEffect(() => {
+    if (storageError) {
+      Alert.alert(i18n.t("settings"), i18n.t("storageError"));
+    }
+  }, [storageError]);
 
   const openInputModal = () =>
     setModalState((prev) => ({ ...prev, inputVisible: true }));
@@ -88,6 +95,8 @@ export default function MemoHome() {
             pressed && styles.pressed,
           ]}
           onPress={openInputModal}
+          accessibilityRole="button"
+          accessibilityLabel={i18n.t("writeMemo")}
         >
           <AntDesign name="plus" size={18} color={theme.addButtonText} />
           <Text style={[styles.buttonText, { color: theme.addButtonText }]}>
@@ -103,6 +112,9 @@ export default function MemoHome() {
             pressed && styles.pressed,
           ]}
           onPress={openSettings}
+          hitSlop={10}
+          accessibilityRole="button"
+          accessibilityLabel={i18n.t("settings")}
         >
           <Feather name="settings" size={16} color={theme.icon} />
         </Pressable>

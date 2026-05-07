@@ -6,6 +6,7 @@ import {
   ScrollView,
   Pressable,
   ActivityIndicator,
+  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
@@ -57,8 +58,12 @@ const SearchOptionsScreen = ({ onClose }) => {
   const handleSave = async () => {
     try {
       setSaving(true);
-      await saveSelectedSearchOptions(selectedOptions);
-      onClose();
+      const success = await saveSelectedSearchOptions(selectedOptions);
+      if (success) {
+        onClose();
+      } else {
+        Alert.alert(i18n.t("settings"), i18n.t("storageError"));
+      }
     } catch (error) {
       console.error("Failed to save options:", error);
     } finally {
@@ -113,7 +118,13 @@ const SearchOptionsScreen = ({ onClose }) => {
       <View
         style={[styles.header, { backgroundColor: theme.backgroundSecondary }]}
       >
-        <Pressable onPress={onClose} style={styles.backButton}>
+        <Pressable
+          onPress={onClose}
+          style={styles.backButton}
+          hitSlop={10}
+          accessibilityRole="button"
+          accessibilityLabel={i18n.t("cancel")}
+        >
           <Feather name="arrow-left" size={24} color={theme.text} />
         </Pressable>
         <Text style={[styles.headerTitle, { color: theme.text }]}>
@@ -123,6 +134,8 @@ const SearchOptionsScreen = ({ onClose }) => {
           onPress={handleSave}
           style={[styles.saveButton, saving && styles.disabledButton]}
           disabled={saving}
+          accessibilityRole="button"
+          accessibilityLabel={i18n.t("save")}
         >
           <Text style={[styles.saveButtonText, { color: theme.primary }]}>
             {saving ? i18n.t("saving") : i18n.t("save")}
@@ -151,6 +164,9 @@ const SearchOptionsScreen = ({ onClose }) => {
                   },
                 ]}
                 onPress={() => toggleOption(option.key)}
+                accessibilityRole="checkbox"
+                accessibilityState={{ checked: selectedOptions.includes(option.key) }}
+                accessibilityLabel={option.label}
               >
                 <View style={styles.optionLeft}>
                   <View style={styles.optionIcon}>{renderIcon(option)}</View>

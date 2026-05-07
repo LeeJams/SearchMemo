@@ -19,6 +19,8 @@ function MemoItem({ item, openActionModal }) {
       onPress={() => openActionModal(item)}
       style={({ pressed }) => pressed && styles.pressed}
       android_ripple={{ color: theme.textSecondary }}
+      accessibilityRole="button"
+      accessibilityLabel={`${text} ${date}`}
     >
       <View
         style={[

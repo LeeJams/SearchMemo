@@ -7,12 +7,14 @@ import {
   Linking,
   ActivityIndicator,
   ScrollView,
+  Alert,
 } from "react-native";
 import * as Clipboard from "expo-clipboard";
 import { getActionOptions, getFixedActionOptions } from "../../utill/option";
 import React, { useState, useEffect } from "react";
 import { useTheme } from "../../hooks/useTheme";
 import { searchIconMap } from "../icons/SearchIcons";
+import i18n from "../../locales/i18n";
 
 const NUM_COLUMNS = 3;
 
@@ -50,34 +52,63 @@ function MemoActionModal({
     }
   };
 
-  const handleOptionPress = (option) => {
+  const openExternalUrl = async (url) => {
+    const canOpen = await Linking.canOpenURL(url);
+    if (!canOpen) {
+      throw new Error(`Cannot open URL: ${url}`);
+    }
+    await Linking.openURL(url);
+  };
+
+  const confirmDelete = () => {
+    Alert.alert(i18n.t("deleteConfirmTitle"), i18n.t("deleteConfirmMessage"), [
+      { text: i18n.t("cancel"), style: "cancel" },
+      {
+        text: i18n.t("delete"),
+        style: "destructive",
+        onPress: () => {
+          deleteMemo(selectedMemo.id);
+          closeModal();
+        },
+      },
+    ]);
+  };
+
+  const handleOptionPress = async (option) => {
     if (!selectedMemo) return;
 
-    switch (option.key) {
-      case "copy":
-        Clipboard.setStringAsync(selectedMemo.text);
-        break;
-      case "edit":
-        modifyMemo(selectedMemo);
-        break;
-      case "delete":
-        deleteMemo(selectedMemo.id);
-        break;
-      default:
-        if (option.baseUrl) {
-          // AI 서비스 등 클립보드 복사가 필요한 경우
-          if (option.copyToClipboard) {
-            Clipboard.setStringAsync(selectedMemo.text);
-            Linking.openURL(option.baseUrl);
-          } else {
-            // 일반 검색 서비스
-            Linking.openURL(
-              option.baseUrl + encodeURIComponent(selectedMemo.text)
-            );
+    try {
+      switch (option.key) {
+        case "copy":
+          await Clipboard.setStringAsync(selectedMemo.text);
+          Alert.alert(i18n.t("copy"), i18n.t("copiedToClipboard"));
+          closeModal();
+          break;
+        case "edit":
+          modifyMemo(selectedMemo);
+          closeModal();
+          break;
+        case "delete":
+          confirmDelete();
+          break;
+        default:
+          if (option.baseUrl) {
+            if (option.copyToClipboard) {
+              await Clipboard.setStringAsync(selectedMemo.text);
+              Alert.alert(i18n.t("copy"), i18n.t("copiedToClipboard"));
+              await openExternalUrl(option.baseUrl);
+            } else {
+              await openExternalUrl(
+                option.baseUrl + encodeURIComponent(selectedMemo.text)
+              );
+            }
           }
-        }
+          closeModal();
+      }
+    } catch (error) {
+      console.error("Failed to handle memo action:", error);
+      Alert.alert(i18n.t("search"), i18n.t("openLinkError"));
     }
-    closeModal();
   };
 
   const renderIcon = (option) => {
@@ -111,6 +142,8 @@ function MemoActionModal({
         onPress={() => handleOptionPress(option)}
         android_ripple={{ color: theme.border }}
         disabled={!selectedMemo}
+        accessibilityRole="button"
+        accessibilityLabel={option.label}
       >
         {renderIcon(option)}
         <Text

@@ -1,8 +1,5 @@
 import { getLocales } from "expo-localization";
 import { I18n } from "i18n-js";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-
-const LANGUAGE_KEY = "user-language";
 
 const translations = {
   en: {
@@ -35,6 +32,17 @@ const translations = {
       "Choose the search engines to use for web searches of your memos. Only selected engines will appear in the search list. You must select at least one.",
     language: "Language",
     searchOptionsWarning: "You must select at least one search engine.",
+    systemTheme: "System",
+    lightTheme: "Light",
+    darkTheme: "Dark",
+    themeMode: "Theme Mode",
+    storageError: "Some changes may not be saved. Please try again.",
+    openLinkError: "Could not open the selected service.",
+    copiedToClipboard: "Copied to clipboard.",
+    deleteConfirmTitle: "Delete memo?",
+    deleteConfirmMessage: "This memo will be permanently deleted.",
+    confirm: "Confirm",
+    languageChanged: "Language changed.",
   },
   ko: {
     add: "추가",
@@ -66,6 +74,17 @@ const translations = {
       "메모를 웹에서 검색할 때 사용할 검색 엔진을 고르세요. 선택한 검색 엔진만 검색 목록에 표시됩니다. 최소 1개 이상 선택해야 합니다.",
     language: "언어",
     searchOptionsWarning: "하나 이상의 검색 엔진을 선택해야 합니다.",
+    systemTheme: "시스템",
+    lightTheme: "라이트",
+    darkTheme: "다크",
+    themeMode: "테마 모드",
+    storageError: "일부 변경사항이 저장되지 않을 수 있습니다. 다시 시도해주세요.",
+    openLinkError: "선택한 서비스를 열 수 없습니다.",
+    copiedToClipboard: "클립보드에 복사되었습니다.",
+    deleteConfirmTitle: "메모를 삭제할까요?",
+    deleteConfirmMessage: "이 메모는 영구적으로 삭제됩니다.",
+    confirm: "확인",
+    languageChanged: "언어가 변경되었습니다.",
   },
   zh: {
     add: "添加",
@@ -228,30 +247,29 @@ const translations = {
 const i18n = new I18n(translations);
 const supportedLocales = Object.keys(translations);
 
-// 앱 시작 시 저장된 언어 설정 불러오기
-(async () => {
-  try {
-    const savedLanguage = await AsyncStorage.getItem(LANGUAGE_KEY);
-    if (savedLanguage) {
-      i18n.locale = savedLanguage;
-    } else {
-      const deviceLanguage = getLocales()[0]?.languageCode;
-      i18n.locale = supportedLocales.includes(deviceLanguage)
-        ? deviceLanguage
-        : "en";
-    }
-  } catch (error) {
-    console.error(
-      "Failed to load language from storage, falling back to default.",
-      error
-    );
-    const deviceLanguage = getLocales()[0]?.languageCode;
-    i18n.locale = supportedLocales.includes(deviceLanguage)
-      ? deviceLanguage
-      : "en";
-  }
-})();
+export const LANGUAGE_KEY = "user-language";
+export const supportedLanguages = [
+  { code: "en", name: "English" },
+  { code: "ko", name: "한국어" },
+  { code: "zh", name: "中文" },
+  { code: "ja", name: "日本語" },
+  { code: "de", name: "Deutsch" },
+  { code: "ru", name: "Русский" },
+  { code: "hi", name: "हिन्दी" },
+];
 
+export function getDeviceLocale() {
+  const deviceLanguage = getLocales()[0]?.languageCode;
+  return supportedLocales.includes(deviceLanguage) ? deviceLanguage : "en";
+}
+
+export function setAppLocale(locale) {
+  const normalizedLocale = supportedLocales.includes(locale) ? locale : "en";
+  i18n.locale = normalizedLocale;
+  return normalizedLocale;
+}
+
+i18n.locale = getDeviceLocale();
 i18n.enableFallback = true;
 i18n.defaultLocale = "en";
 

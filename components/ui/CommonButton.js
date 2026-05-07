@@ -1,12 +1,14 @@
 import { Text, Pressable, StyleSheet } from "react-native";
 import React from "react";
 
-function CommonButton({ children, onPress, style, textStyle }) {
+function CommonButton({ children, onPress, style, textStyle, accessibilityLabel }) {
   return (
     <Pressable
       style={({ pressed }) => [styles.button, style, pressed && styles.pressed]}
       onPress={onPress}
       android_ripple={{ color: "#878787" }}
+      accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel || String(children)}
     >
       <Text style={[styles.buttonText, textStyle]}>{children}</Text>
     </Pressable>
