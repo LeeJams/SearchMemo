@@ -1,48 +1,53 @@
 import { useState, useEffect } from "react";
-import { getCurrentDate, getMemos, storeMemos } from "../utill/memo";
+import { buildMemo, buildUpdatedMemo, getMemos, storeMemos } from "../utill/memo";
 
 export function useMemos() {
   const [memos, setMemos] = useState([]);
   const [isInit, setIsInit] = useState(false);
+  const [storageError, setStorageError] = useState(null);
 
   useEffect(() => {
-    getMemos().then((loadedMemos) => {
-      if (loadedMemos?.length) {
+    let isMounted = true;
+
+    getMemos()
+      .then((loadedMemos) => {
+        if (!isMounted) return;
         setMemos(loadedMemos);
-      }
-      setIsInit(true);
-    });
+      })
+      .catch((error) => {
+        if (!isMounted) return;
+        console.error("Failed to initialize memos", error);
+        setStorageError(error);
+      })
+      .finally(() => {
+        if (isMounted) {
+          setIsInit(true);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   useEffect(() => {
     if (isInit) {
-      storeMemos(memos);
+      storeMemos(memos).then((success) => {
+        if (!success) {
+          setStorageError(new Error("Failed to store memos"));
+        }
+      });
     }
   }, [memos, isInit]);
 
   const addMemo = (memoData) => {
-    setMemos((currentMemos) => [
-      {
-        text: memoData.text.trim(),
-        id: Date.now(),
-        date: getCurrentDate(),
-        color: memoData.color,
-      },
-      ...currentMemos,
-    ]);
+    setMemos((currentMemos) => [buildMemo(memoData), ...currentMemos]);
   };
 
   const updateMemo = (memoData) => {
     setMemos((currentMemos) =>
       currentMemos.map((memo) =>
-        memo.id === memoData.id
-          ? {
-              ...memo,
-              text: memoData.text.trim(),
-              date: getCurrentDate(),
-              color: memoData.color,
-            }
-          : memo
+        memo.id === memoData.id ? buildUpdatedMemo(memo, memoData) : memo
       )
     );
   };
@@ -54,6 +59,7 @@ export function useMemos() {
   return {
     memos,
     isInit,
+    storageError,
     addMemo,
     updateMemo,
     deleteMemo,

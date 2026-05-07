@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, Switch, Pressable } from "react-native";
+import { View, Text, StyleSheet, Pressable } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import i18n from "../../locales/i18n";
 import { useTheme } from "../../hooks/useTheme";
@@ -9,7 +9,7 @@ import { Feather } from "@expo/vector-icons";
 
 const SettingsScreen = () => {
   const insets = useSafeAreaInsets();
-  const { theme, themeName, toggleTheme } = useTheme();
+  const { theme, themePreference, setTheme } = useTheme();
   const [showSearchOptions, setShowSearchOptions] = useState(false);
   const [showLanguageScreen, setShowLanguageScreen] = useState(false);
 
@@ -21,6 +21,12 @@ const SettingsScreen = () => {
     return <LanguageScreen onClose={() => setShowLanguageScreen(false)} />;
   }
 
+  const themeOptions = [
+    { key: "system", label: i18n.t("systemTheme") },
+    { key: "light", label: i18n.t("lightTheme") },
+    { key: "dark", label: i18n.t("darkTheme") },
+  ];
+
   return (
     <View
       style={[
@@ -28,7 +34,7 @@ const SettingsScreen = () => {
         {
           paddingTop: insets.top,
           paddingBottom: insets.bottom,
-          backgroundColor: theme.backgroundSecondary,
+          backgroundColor: theme.background,
         },
       ]}
     >
@@ -37,20 +43,62 @@ const SettingsScreen = () => {
           {i18n.t("settings")}
         </Text>
       </View>
-      <View style={[styles.settingItem, { borderBottomColor: theme.border }]}>
+      <View
+        style={[
+          styles.settingBlock,
+          {
+            backgroundColor: theme.backgroundSecondary,
+            borderBottomColor: theme.border,
+          },
+        ]}
+      >
         <Text style={[styles.settingText, { color: theme.text }]}>
-          {i18n.t("theme")}
+          {i18n.t("themeMode")}
         </Text>
-        <Switch
-          value={themeName === "dark"}
-          onValueChange={toggleTheme}
-          trackColor={{ false: "#767577", true: theme.primary }}
-          thumbColor={"#ffffff"}
-        />
+        <View style={styles.segmentedControl}>
+          {themeOptions.map((option) => {
+            const isSelected = themePreference === option.key;
+            return (
+              <Pressable
+                key={option.key}
+                onPress={() => setTheme(option.key)}
+                style={[
+                  styles.themeOption,
+                  {
+                    backgroundColor: isSelected
+                      ? theme.primary
+                      : theme.textInputBG,
+                    borderColor: theme.border,
+                  },
+                ]}
+                accessibilityRole="button"
+                accessibilityState={{ selected: isSelected }}
+                accessibilityLabel={option.label}
+              >
+                <Text
+                  style={[
+                    styles.themeOptionText,
+                    { color: isSelected ? theme.primaryText : theme.text },
+                  ]}
+                >
+                  {option.label}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
       </View>
       <Pressable
-        style={[styles.settingItem, { borderBottomColor: theme.border }]}
+        style={[
+          styles.settingItem,
+          {
+            backgroundColor: theme.backgroundSecondary,
+            borderBottomColor: theme.border,
+          },
+        ]}
         onPress={() => setShowSearchOptions(true)}
+        accessibilityRole="button"
+        accessibilityLabel={i18n.t("searchOptionsTitle")}
       >
         <Text style={[styles.settingText, { color: theme.text }]}>
           {i18n.t("search")}
@@ -58,8 +106,16 @@ const SettingsScreen = () => {
         <Feather name="chevron-right" size={20} color={theme.textSecondary} />
       </Pressable>
       <Pressable
-        style={[styles.settingItem, { borderBottomColor: theme.border }]}
+        style={[
+          styles.settingItem,
+          {
+            backgroundColor: theme.backgroundSecondary,
+            borderBottomColor: theme.border,
+          },
+        ]}
         onPress={() => setShowLanguageScreen(true)}
+        accessibilityRole="button"
+        accessibilityLabel={i18n.t("language")}
       >
         <Text style={[styles.settingText, { color: theme.text }]}>
           {i18n.t("language")}
@@ -75,12 +131,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    padding: 20,
+    paddingHorizontal: 20,
+    paddingVertical: 18,
     borderBottomWidth: 1,
   },
   headerTitle: {
-    fontSize: 22,
-    fontWeight: "bold",
+    fontSize: 20,
+    fontWeight: "700",
   },
   settingItem: {
     flexDirection: "row",
@@ -89,8 +146,28 @@ const styles = StyleSheet.create({
     padding: 20,
     borderBottomWidth: 1,
   },
+  settingBlock: {
+    padding: 20,
+    borderBottomWidth: 1,
+  },
   settingText: {
     fontSize: 16,
+  },
+  segmentedControl: {
+    flexDirection: "row",
+    gap: 8,
+    marginTop: 12,
+  },
+  themeOption: {
+    flex: 1,
+    alignItems: "center",
+    paddingVertical: 8,
+    borderRadius: 6,
+    borderWidth: 1,
+  },
+  themeOptionText: {
+    fontSize: 13,
+    fontWeight: "600",
   },
 });
 

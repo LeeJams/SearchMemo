@@ -1,29 +1,43 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
+const {
+  createMemo,
+  updateMemo,
+  parseStoredMemos,
+  formatMemoDateFromIso,
+} = require("./memoModel");
+
+const MEMOS_STORAGE_KEY = "memos";
+
 export async function getMemos() {
   try {
-    const jsonValue = await AsyncStorage.getItem("memos");
-    return jsonValue != null ? JSON.parse(jsonValue) : [];
+    const jsonValue = await AsyncStorage.getItem(MEMOS_STORAGE_KEY);
+    return parseStoredMemos(jsonValue);
   } catch (e) {
     console.error("Failed to fetch memos from storage", e);
-    throw e;
+    return [];
   }
 }
 
 export async function storeMemos(memos) {
   try {
     const jsonValue = JSON.stringify(memos);
-    await AsyncStorage.setItem("memos", jsonValue);
+    await AsyncStorage.setItem(MEMOS_STORAGE_KEY, jsonValue);
+    return true;
   } catch (e) {
     console.error("Failed to store memos in storage", e);
-    throw e;
+    return false;
   }
 }
 
+export function buildMemo(memoData) {
+  return createMemo(memoData);
+}
+
+export function buildUpdatedMemo(existingMemo, memoData) {
+  return updateMemo(existingMemo, memoData);
+}
+
 export function getCurrentDate() {
-  const date = new Date();
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}. ${month}. ${day}.`;
+  return formatMemoDateFromIso(new Date().toISOString());
 }

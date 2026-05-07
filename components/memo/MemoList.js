@@ -1,4 +1,4 @@
-import { StyleSheet, FlatList } from "react-native";
+import { StyleSheet, FlatList, View } from "react-native";
 import MemoItem from "./MemoItem";
 import { useCallback } from "react";
 
@@ -11,12 +11,13 @@ function MemoList({ memos, openModal }) {
   return (
     <FlatList
       data={memos}
-      numColumns={2}
-      columnWrapperStyle={styles.wrapper}
       style={styles.memoListContainer}
+      contentContainerStyle={styles.contentContainer}
       renderItem={renderMemoItem}
       keyExtractor={(item) => item.id.toString()}
+      ItemSeparatorComponent={() => <View style={styles.separator} />}
       alwaysBounceVertical={false}
+      contentInsetAdjustmentBehavior="automatic"
     />
   );
 }
@@ -27,8 +28,12 @@ const styles = StyleSheet.create({
   memoListContainer: {
     flex: 1,
   },
-  wrapper: {
-    justifyContent: "space-between",
-    paddingHorizontal: 4,
+  contentContainer: {
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    paddingBottom: 88,
+  },
+  separator: {
+    height: 8,
   },
 });

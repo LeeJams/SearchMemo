@@ -1,6 +1,11 @@
 import i18n from "../locales/i18n";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
+const {
+  defaultSelectedSearchOptions,
+  sanitizeSelectedSearchOptions,
+} = require("./optionModel");
+
 const SEARCH_OPTIONS_KEY = "selectedSearchOptions";
 
 // 모든 검색 옵션들 (사용자가 선택할 수 있는 전체 목록)
@@ -152,14 +157,7 @@ export const getFixedActionOptions = () => [
 ];
 
 // 기본 선택된 검색 옵션들 (초기값)
-export const defaultSelectedSearchOptions = [
-  "google",
-  "youtube",
-  "bing",
-  "chatgpt",
-  "gemini",
-  "perplexity",
-];
+export { defaultSelectedSearchOptions };
 
 // 기존 actionOptions (호환성을 위해 유지, 나중에 deprecated)
 export const actionOptions = [
@@ -183,7 +181,15 @@ export const getSelectedSearchOptions = async () => {
   try {
     const saved = await AsyncStorage.getItem(SEARCH_OPTIONS_KEY);
     if (saved) {
-      return JSON.parse(saved);
+      const parsed = JSON.parse(saved);
+      const sanitizedOptions = sanitizeSelectedSearchOptions(parsed);
+      if (JSON.stringify(parsed) !== JSON.stringify(sanitizedOptions)) {
+        await AsyncStorage.setItem(
+          SEARCH_OPTIONS_KEY,
+          JSON.stringify(sanitizedOptions)
+        );
+      }
+      return sanitizedOptions;
     }
     // 저장된 값이 없으면 초기값 저장하고 반환
     await AsyncStorage.setItem(
@@ -201,7 +207,7 @@ export const saveSelectedSearchOptions = async (selectedKeys) => {
   try {
     await AsyncStorage.setItem(
       SEARCH_OPTIONS_KEY,
-      JSON.stringify(selectedKeys)
+      JSON.stringify(sanitizeSelectedSearchOptions(selectedKeys))
     );
     return true;
   } catch (error) {
@@ -213,9 +219,9 @@ export const saveSelectedSearchOptions = async (selectedKeys) => {
 export const getActionOptions = async () => {
   try {
     const selectedKeys = await getSelectedSearchOptions();
-    const selectedSearchOptions = allSearchOptions.filter((opt) =>
-      selectedKeys.includes(opt.key)
-    );
+    const selectedSearchOptions = selectedKeys
+      .map((key) => allSearchOptions.find((opt) => opt.key === key))
+      .filter(Boolean);
     return [...selectedSearchOptions, ...getFixedActionOptions()];
   } catch (error) {
     console.error("Failed to get action options:", error);

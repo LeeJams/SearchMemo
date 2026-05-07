@@ -15,6 +15,8 @@ import { colorOptions } from "../../utill/option";
 import i18n from "../../locales/i18n";
 import { useTheme } from "../../hooks/useTheme";
 
+const { DEFAULT_MEMO_COLOR } = require("../../utill/memoModel");
+
 const MemoInputModal = forwardRef((props, ref) => {
   const { theme } = useTheme();
   const [isModify, setIsModify] = useState(false);
@@ -22,7 +24,7 @@ const MemoInputModal = forwardRef((props, ref) => {
   const [memoData, setMemoData] = useState({
     id: null,
     text: "",
-    color: "#e6e6e6",
+    color: DEFAULT_MEMO_COLOR,
     date: "",
   });
 
@@ -60,7 +62,7 @@ const MemoInputModal = forwardRef((props, ref) => {
   }
 
   function modalCloseHandler() {
-    setMemoData({ id: null, text: "", color: "#e6e6e6", date: "" });
+    setMemoData({ id: null, text: "", color: DEFAULT_MEMO_COLOR, date: "" });
     setIsModify(false);
     setWarning(false);
     props.closeModal();
@@ -86,7 +88,10 @@ const MemoInputModal = forwardRef((props, ref) => {
         <View
           style={[
             styles.inputContainer,
-            { backgroundColor: theme.backgroundSecondary },
+            {
+              backgroundColor: theme.backgroundSecondary,
+              borderColor: theme.border,
+            },
           ]}
         >
           <TextInput
@@ -106,6 +111,8 @@ const MemoInputModal = forwardRef((props, ref) => {
             autoCorrect={false}
             autoFocus={true}
             multiline={true}
+            maxLength={500}
+            accessibilityLabel={i18n.t("memoPlaceholder")}
           />
           {warning && (
             <Text style={styles.warningText}>{i18n.t("warning")}</Text>
@@ -118,9 +125,15 @@ const MemoInputModal = forwardRef((props, ref) => {
                   styles.colorButton,
                   {
                     backgroundColor: color,
+                    borderColor:
+                      memoData.color === color ? theme.primary : theme.border,
+                    borderWidth: memoData.color === color ? 2 : 1,
                   },
                 ]}
                 onPress={() => colorSelectHandler(color)}
+                accessibilityRole="button"
+                accessibilityState={{ selected: memoData.color === color }}
+                accessibilityLabel={`Color ${idx + 1}`}
               >
                 {memoData.color === color && (
                   <Feather name="check" size={18} color={theme.text} />
@@ -177,31 +190,25 @@ const styles = StyleSheet.create({
   },
   inputContainer: {
     width: "100%",
-    padding: 20,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: -2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-    elevation: 10,
+    padding: 18,
+    borderTopLeftRadius: 8,
+    borderTopRightRadius: 8,
+    borderTopWidth: 1,
   },
   textInput: {
-    borderRadius: 10,
+    borderRadius: 6,
     width: "100%",
     padding: 16,
-    minHeight: 100,
+    minHeight: 118,
     textAlignVertical: "top",
-    marginBottom: 10,
+    marginBottom: 8,
     borderWidth: 1,
   },
   buttonContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginTop: 20,
+    gap: 10,
+    marginTop: 16,
   },
   warningText: {
     alignSelf: "flex-start",
@@ -212,28 +219,26 @@ const styles = StyleSheet.create({
   },
   colorContainer: {
     flexDirection: "row",
-    marginVertical: 10,
-    justifyContent: "space-around",
+    marginVertical: 12,
+    gap: 10,
   },
   colorButton: {
-    width: 35,
-    height: 35,
-    borderRadius: 17.5,
-    marginHorizontal: 10,
+    width: 34,
+    height: 34,
+    borderRadius: 6,
     justifyContent: "center",
     alignItems: "center",
   },
   addButton: {
     flex: 1,
-    marginLeft: 10,
-    borderRadius: 10,
+    borderRadius: 6,
   },
   addButtonText: {
     fontWeight: "bold",
   },
   cancelButton: {
     flex: 1,
-    borderRadius: 10,
+    borderRadius: 6,
   },
   cancelButtonText: {},
 });

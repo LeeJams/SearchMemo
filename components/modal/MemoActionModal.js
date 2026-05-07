@@ -7,12 +7,14 @@ import {
   Linking,
   ActivityIndicator,
   ScrollView,
+  Alert,
 } from "react-native";
 import * as Clipboard from "expo-clipboard";
 import { getActionOptions, getFixedActionOptions } from "../../utill/option";
 import React, { useState, useEffect } from "react";
 import { useTheme } from "../../hooks/useTheme";
 import { searchIconMap } from "../icons/SearchIcons";
+import i18n from "../../locales/i18n";
 
 const NUM_COLUMNS = 3;
 
@@ -50,34 +52,63 @@ function MemoActionModal({
     }
   };
 
-  const handleOptionPress = (option) => {
+  const openExternalUrl = async (url) => {
+    const canOpen = await Linking.canOpenURL(url);
+    if (!canOpen) {
+      throw new Error(`Cannot open URL: ${url}`);
+    }
+    await Linking.openURL(url);
+  };
+
+  const confirmDelete = () => {
+    Alert.alert(i18n.t("deleteConfirmTitle"), i18n.t("deleteConfirmMessage"), [
+      { text: i18n.t("cancel"), style: "cancel" },
+      {
+        text: i18n.t("delete"),
+        style: "destructive",
+        onPress: () => {
+          deleteMemo(selectedMemo.id);
+          closeModal();
+        },
+      },
+    ]);
+  };
+
+  const handleOptionPress = async (option) => {
     if (!selectedMemo) return;
 
-    switch (option.key) {
-      case "copy":
-        Clipboard.setStringAsync(selectedMemo.text);
-        break;
-      case "edit":
-        modifyMemo(selectedMemo);
-        break;
-      case "delete":
-        deleteMemo(selectedMemo.id);
-        break;
-      default:
-        if (option.baseUrl) {
-          // AI 서비스 등 클립보드 복사가 필요한 경우
-          if (option.copyToClipboard) {
-            Clipboard.setStringAsync(selectedMemo.text);
-            Linking.openURL(option.baseUrl);
-          } else {
-            // 일반 검색 서비스
-            Linking.openURL(
-              option.baseUrl + encodeURIComponent(selectedMemo.text)
-            );
+    try {
+      switch (option.key) {
+        case "copy":
+          await Clipboard.setStringAsync(selectedMemo.text);
+          Alert.alert(i18n.t("copy"), i18n.t("copiedToClipboard"));
+          closeModal();
+          break;
+        case "edit":
+          modifyMemo(selectedMemo);
+          closeModal();
+          break;
+        case "delete":
+          confirmDelete();
+          break;
+        default:
+          if (option.baseUrl) {
+            if (option.copyToClipboard) {
+              await Clipboard.setStringAsync(selectedMemo.text);
+              Alert.alert(i18n.t("copy"), i18n.t("copiedToClipboard"));
+              await openExternalUrl(option.baseUrl);
+            } else {
+              await openExternalUrl(
+                option.baseUrl + encodeURIComponent(selectedMemo.text)
+              );
+            }
           }
-        }
+          closeModal();
+      }
+    } catch (error) {
+      console.error("Failed to handle memo action:", error);
+      Alert.alert(i18n.t("search"), i18n.t("openLinkError"));
     }
-    closeModal();
   };
 
   const renderIcon = (option) => {
@@ -111,6 +142,8 @@ function MemoActionModal({
         onPress={() => handleOptionPress(option)}
         android_ripple={{ color: theme.border }}
         disabled={!selectedMemo}
+        accessibilityRole="button"
+        accessibilityLabel={option.label}
       >
         {renderIcon(option)}
         <Text
@@ -129,7 +162,7 @@ function MemoActionModal({
   return (
     <Modal
       visible={visible}
-      animationType="fade"
+      animationType="slide"
       onRequestClose={closeModal}
       transparent={true}
     >
@@ -140,10 +173,16 @@ function MemoActionModal({
         <Pressable
           style={[
             styles.optionsContainer,
-            { backgroundColor: theme.backgroundSecondary },
+            {
+              backgroundColor: theme.backgroundSecondary,
+              borderColor: theme.border,
+            },
           ]}
           onPress={(e) => e.stopPropagation()}
         >
+          <View style={styles.handleContainer}>
+            <View style={[styles.handle, { backgroundColor: theme.border }]} />
+          </View>
           {loading ? (
             <View style={styles.loadingContainer}>
               <ActivityIndicator size="small" color={theme.primary} />
@@ -176,23 +215,32 @@ export default React.memo(MemoActionModal);
 const styles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
-    justifyContent: "center",
+    justifyContent: "flex-end",
   },
   optionsContainer: {
-    marginHorizontal: "5%",
-    borderRadius: 8,
-    elevation: 5,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    maxHeight: "70%", // 최대 높이 제한
+    width: "100%",
+    borderTopLeftRadius: 8,
+    borderTopRightRadius: 8,
+    borderTopWidth: 1,
+    maxHeight: "72%",
     overflow: "hidden",
+  },
+  handleContainer: {
+    alignItems: "center",
+    paddingTop: 10,
+    paddingBottom: 4,
+  },
+  handle: {
+    width: 36,
+    height: 4,
+    borderRadius: 2,
   },
   scrollContainer: {
     flexDirection: "row",
     flexWrap: "wrap",
-    padding: 10,
+    paddingHorizontal: 10,
+    paddingTop: 6,
+    paddingBottom: 10,
   },
   optionWrapper: {
     width: `${100 / NUM_COLUMNS}%`,
@@ -203,6 +251,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-around",
     paddingVertical: 10,
+    paddingHorizontal: 12,
     borderTopWidth: 1,
   },
   fixedOptionWrapper: {
@@ -211,8 +260,9 @@ const styles = StyleSheet.create({
   },
   optionButton: {
     alignItems: "center",
-    padding: 8,
-    borderRadius: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 8,
+    borderRadius: 6,
     minWidth: 60,
   },
   fixedOptionButton: {

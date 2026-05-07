@@ -6,6 +6,7 @@ import {
   ScrollView,
   Pressable,
   ActivityIndicator,
+  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
@@ -57,8 +58,12 @@ const SearchOptionsScreen = ({ onClose }) => {
   const handleSave = async () => {
     try {
       setSaving(true);
-      await saveSelectedSearchOptions(selectedOptions);
-      onClose();
+      const success = await saveSelectedSearchOptions(selectedOptions);
+      if (success) {
+        onClose();
+      } else {
+        Alert.alert(i18n.t("settings"), i18n.t("storageError"));
+      }
     } catch (error) {
       console.error("Failed to save options:", error);
     } finally {
@@ -110,10 +115,14 @@ const SearchOptionsScreen = ({ onClose }) => {
     <SafeAreaView
       style={[styles.container, { backgroundColor: theme.background }]}
     >
-      <View
-        style={[styles.header, { backgroundColor: theme.backgroundSecondary }]}
-      >
-        <Pressable onPress={onClose} style={styles.backButton}>
+      <View style={[styles.header, { borderBottomColor: theme.border }]}>
+        <Pressable
+          onPress={onClose}
+          style={styles.backButton}
+          hitSlop={10}
+          accessibilityRole="button"
+          accessibilityLabel={i18n.t("cancel")}
+        >
           <Feather name="arrow-left" size={24} color={theme.text} />
         </Pressable>
         <Text style={[styles.headerTitle, { color: theme.text }]}>
@@ -123,6 +132,8 @@ const SearchOptionsScreen = ({ onClose }) => {
           onPress={handleSave}
           style={[styles.saveButton, saving && styles.disabledButton]}
           disabled={saving}
+          accessibilityRole="button"
+          accessibilityLabel={i18n.t("save")}
         >
           <Text style={[styles.saveButtonText, { color: theme.primary }]}>
             {saving ? i18n.t("saving") : i18n.t("save")}
@@ -130,7 +141,10 @@ const SearchOptionsScreen = ({ onClose }) => {
         </Pressable>
       </View>
 
-      <ScrollView style={styles.content}>
+      <ScrollView
+        style={styles.content}
+        contentContainerStyle={styles.contentContainer}
+      >
         <Text style={[styles.description, { color: theme.textSecondary }]}>
           {i18n.t("searchOptionsDescription")}
         </Text>
@@ -151,6 +165,11 @@ const SearchOptionsScreen = ({ onClose }) => {
                   },
                 ]}
                 onPress={() => toggleOption(option.key)}
+                accessibilityRole="checkbox"
+                accessibilityState={{
+                  checked: selectedOptions.includes(option.key),
+                }}
+                accessibilityLabel={option.label}
               >
                 <View style={styles.optionLeft}>
                   <View style={styles.optionIcon}>{renderIcon(option)}</View>
@@ -196,28 +215,19 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
-    padding: 16,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 5,
+    padding: 20,
+    borderBottomWidth: 1,
   },
   backButton: {
-    padding: 4,
+    marginRight: 20,
   },
   headerTitle: {
     fontSize: 18,
-    fontWeight: "600",
+    fontWeight: "bold",
     flex: 1,
-    textAlign: "center",
   },
   saveButton: {
-    padding: 4,
+    marginLeft: 20,
   },
   saveButtonText: {
     fontSize: 16,
@@ -229,8 +239,12 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
   },
+  contentContainer: {
+    paddingBottom: 24,
+  },
   description: {
-    padding: 16,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
     fontSize: 14,
     lineHeight: 20,
   },
@@ -251,7 +265,7 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     marginHorizontal: 16,
     marginVertical: 4,
-    borderRadius: 8,
+    borderRadius: 6,
     borderWidth: 1,
   },
   optionLeft: {
@@ -270,9 +284,9 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
   checkbox: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
+    width: 22,
+    height: 22,
+    borderRadius: 4,
     borderWidth: 2,
     alignItems: "center",
     justifyContent: "center",
