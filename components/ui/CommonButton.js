@@ -19,19 +19,19 @@ export default React.memo(CommonButton);
 
 const styles = StyleSheet.create({
   button: {
-    borderRadius: 20,
-    marginHorizontal: 20,
+    minHeight: 42,
+    borderRadius: 6,
     overflow: "hidden",
-    width: "33%",
-    elevation: 2,
     borderWidth: 1,
     borderColor: "#e1e1e3",
+    alignItems: "center",
+    justifyContent: "center",
   },
   buttonText: {
     textAlign: "center",
     fontSize: 15,
     fontWeight: "bold",
-    paddingVertical: 8,
+    paddingVertical: 10,
     paddingHorizontal: 16,
     fontFamily: "NotoSansKR",
   },

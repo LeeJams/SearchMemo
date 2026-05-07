@@ -1,42 +1,37 @@
-import {
-  StyleSheet,
-  View,
-  Text,
-  Pressable,
-  useWindowDimensions,
-} from "react-native";
+import { StyleSheet, View, Text, Pressable } from "react-native";
 import React from "react";
 import { useTheme } from "../../hooks/useTheme";
+import { Feather } from "@expo/vector-icons";
 
 function MemoItem({ item, openActionModal }) {
   const { theme } = useTheme();
   const { text, date, color } = item;
-  const { width } = useWindowDimensions();
-  const memoWidth = (width - 13) / 2;
 
   return (
     <Pressable
       onPress={() => openActionModal(item)}
-      style={({ pressed }) => pressed && styles.pressed}
+      style={({ pressed }) => [
+        styles.memoContainer,
+        {
+          backgroundColor: pressed
+            ? theme.textInputBG
+            : theme.backgroundSecondary,
+          borderColor: theme.border,
+        },
+      ]}
       android_ripple={{ color: theme.textSecondary }}
       accessibilityRole="button"
       accessibilityLabel={`${text} ${date}`}
     >
-      <View
-        style={[
-          styles.memoContainer,
-          {
-            width: memoWidth,
-            backgroundColor: theme.backgroundSecondary,
-            borderColor: theme.border,
-          },
-        ]}
-      >
+      <View style={[styles.colorStrip, { backgroundColor: color }]} />
+      <View style={styles.memoContent}>
         <Text style={[styles.memoText, { color: theme.text }]}>{text}</Text>
         <Text style={[styles.dateText, { color: theme.textSecondary }]}>
           {date}
         </Text>
-        <View style={[styles.containerBadge, { backgroundColor: color }]} />
+      </View>
+      <View style={styles.chevronContainer}>
+        <Feather name="chevron-right" size={18} color={theme.textSecondary} />
       </View>
     </Pressable>
   );
@@ -46,38 +41,34 @@ export default React.memo(MemoItem);
 
 const styles = StyleSheet.create({
   memoContainer: {
-    marginBottom: 5,
-    borderRadius: 10,
+    minHeight: 76,
+    flexDirection: "row",
+    alignItems: "center",
+    borderRadius: 6,
     borderWidth: 1,
-    elevation: 2,
-    shadowOpacity: 0.3,
-    shadowOffset: {
-      width: 1,
-      height: 1,
-    },
-    shadowRadius: 2,
+    overflow: "hidden",
+  },
+  colorStrip: {
+    width: 4,
+    alignSelf: "stretch",
+  },
+  memoContent: {
+    flex: 1,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
   },
   memoText: {
-    padding: 10,
-    paddingVertical: 15,
-    fontSize: 13,
-    fontFamily: "NotoSansKR",
+    fontSize: 15,
+    lineHeight: 21,
+    fontFamily: "NotoSansKR-Regular",
   },
   dateText: {
+    marginTop: 6,
     fontSize: 12,
-    paddingHorizontal: 10,
-    alignSelf: "flex-end",
+    fontFamily: "NotoSansKR-Regular",
   },
-  pressed: {
-    opacity: 0.5,
-  },
-  containerBadge: {
-    position: "absolute",
-    top: 2,
-    left: 2,
-    width: 8,
-    height: 8,
-    borderRadius: 5,
-    zIndex: 1,
+  chevronContainer: {
+    paddingLeft: 4,
+    paddingRight: 14,
   },
 });

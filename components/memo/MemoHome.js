@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import MemoList from "./MemoList";
 import EmptyScreen from "../ui/EmptyScreen";
 import { useMemos } from "../../hooks/useMemos";
-import { Feather, AntDesign } from "@expo/vector-icons";
+import { Feather } from "@expo/vector-icons";
 import RightSheet from "../modal/RightSheet";
 import { useTheme } from "../../hooks/useTheme";
 import i18n from "../../locales/i18n";
@@ -75,6 +75,28 @@ export default function MemoHome() {
     <SafeAreaView
       style={[styles.appContainer, { backgroundColor: theme.background }]}
     >
+      <View style={[styles.header, { borderBottomColor: theme.border }]}>
+        <Text style={[styles.headerTitle, { color: theme.text }]}>
+          {i18n.t("search")}
+        </Text>
+        <Pressable
+          style={({ pressed }) => [
+            styles.headerButton,
+            {
+              backgroundColor: theme.backgroundSecondary,
+              borderColor: theme.border,
+            },
+            pressed && styles.pressed,
+          ]}
+          onPress={openSettings}
+          hitSlop={10}
+          accessibilityRole="button"
+          accessibilityLabel={i18n.t("settings")}
+        >
+          <Feather name="settings" size={18} color={theme.icon} />
+        </Pressable>
+      </View>
+
       <View
         style={[styles.memosContainer, { backgroundColor: theme.background }]}
       >
@@ -85,12 +107,10 @@ export default function MemoHome() {
         )}
       </View>
 
-      {/* 플로팅 버튼 컨테이너 */}
       <View style={styles.floatingButtonContainer}>
-        {/* 메모 작성 버튼 (길게) */}
         <Pressable
           style={({ pressed }) => [
-            styles.addButtonLong,
+            styles.addButton,
             { backgroundColor: theme.addButton },
             pressed && styles.pressed,
           ]}
@@ -98,25 +118,10 @@ export default function MemoHome() {
           accessibilityRole="button"
           accessibilityLabel={i18n.t("writeMemo")}
         >
-          <AntDesign name="plus" size={18} color={theme.addButtonText} />
+          <Feather name="plus" size={18} color={theme.addButtonText} />
           <Text style={[styles.buttonText, { color: theme.addButtonText }]}>
             {i18n.t("writeMemo")}
           </Text>
-        </Pressable>
-
-        {/* 설정 버튼 (작게) */}
-        <Pressable
-          style={({ pressed }) => [
-            styles.settingsButton,
-            { backgroundColor: theme.backgroundSecondary },
-            pressed && styles.pressed,
-          ]}
-          onPress={openSettings}
-          hitSlop={10}
-          accessibilityRole="button"
-          accessibilityLabel={i18n.t("settings")}
-        >
-          <Feather name="settings" size={16} color={theme.icon} />
         </Pressable>
       </View>
 
@@ -143,57 +148,51 @@ const styles = StyleSheet.create({
   appContainer: {
     flex: 1,
   },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 20,
+    paddingTop: 8,
+    paddingBottom: 14,
+    borderBottomWidth: 1,
+  },
+  headerTitle: {
+    fontSize: 24,
+    fontWeight: "700",
+    fontFamily: "NotoSansKR",
+  },
+  headerButton: {
+    width: 38,
+    height: 38,
+    borderRadius: 8,
+    borderWidth: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   memosContainer: {
     flex: 1,
-    flexGrow: 1,
-    flexDirection: "row",
   },
   floatingButtonContainer: {
     position: "absolute",
-    bottom: 30,
-    left: 20,
+    bottom: 24,
     right: 20,
-    flexDirection: "row",
     alignItems: "center",
-    gap: 10,
   },
-  addButtonLong: {
-    flex: 1,
+  addButton: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 25,
+    minWidth: 132,
+    height: 44,
+    paddingHorizontal: 14,
+    borderRadius: 8,
     gap: 6,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
   },
   buttonText: {
     fontSize: 14,
     fontWeight: "600",
     fontFamily: "NotoSansKR-Medium",
-  },
-  settingsButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: "center",
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.15,
-    shadowRadius: 3.84,
-    elevation: 3,
   },
   pressed: {
     opacity: 0.8,

@@ -34,7 +34,7 @@ const SettingsScreen = () => {
         {
           paddingTop: insets.top,
           paddingBottom: insets.bottom,
-          backgroundColor: theme.backgroundSecondary,
+          backgroundColor: theme.background,
         },
       ]}
     >
@@ -43,7 +43,15 @@ const SettingsScreen = () => {
           {i18n.t("settings")}
         </Text>
       </View>
-      <View style={[styles.settingBlock, { borderBottomColor: theme.border }]}>
+      <View
+        style={[
+          styles.settingBlock,
+          {
+            backgroundColor: theme.backgroundSecondary,
+            borderBottomColor: theme.border,
+          },
+        ]}
+      >
         <Text style={[styles.settingText, { color: theme.text }]}>
           {i18n.t("themeMode")}
         </Text>
@@ -57,7 +65,9 @@ const SettingsScreen = () => {
                 style={[
                   styles.themeOption,
                   {
-                    backgroundColor: isSelected ? theme.primary : theme.textInputBG,
+                    backgroundColor: isSelected
+                      ? theme.primary
+                      : theme.textInputBG,
                     borderColor: theme.border,
                   },
                 ]}
@@ -79,7 +89,13 @@ const SettingsScreen = () => {
         </View>
       </View>
       <Pressable
-        style={[styles.settingItem, { borderBottomColor: theme.border }]}
+        style={[
+          styles.settingItem,
+          {
+            backgroundColor: theme.backgroundSecondary,
+            borderBottomColor: theme.border,
+          },
+        ]}
         onPress={() => setShowSearchOptions(true)}
         accessibilityRole="button"
         accessibilityLabel={i18n.t("searchOptionsTitle")}
@@ -90,7 +106,13 @@ const SettingsScreen = () => {
         <Feather name="chevron-right" size={20} color={theme.textSecondary} />
       </Pressable>
       <Pressable
-        style={[styles.settingItem, { borderBottomColor: theme.border }]}
+        style={[
+          styles.settingItem,
+          {
+            backgroundColor: theme.backgroundSecondary,
+            borderBottomColor: theme.border,
+          },
+        ]}
         onPress={() => setShowLanguageScreen(true)}
         accessibilityRole="button"
         accessibilityLabel={i18n.t("language")}
@@ -109,12 +131,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    padding: 20,
+    paddingHorizontal: 20,
+    paddingVertical: 18,
     borderBottomWidth: 1,
   },
   headerTitle: {
-    fontSize: 22,
-    fontWeight: "bold",
+    fontSize: 20,
+    fontWeight: "700",
   },
   settingItem: {
     flexDirection: "row",
@@ -139,7 +162,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     paddingVertical: 8,
-    borderRadius: 8,
+    borderRadius: 6,
     borderWidth: 1,
   },
   themeOptionText: {

@@ -141,7 +141,10 @@ const SearchOptionsScreen = ({ onClose }) => {
         </Pressable>
       </View>
 
-      <ScrollView style={styles.content}>
+      <ScrollView
+        style={styles.content}
+        contentContainerStyle={styles.contentContainer}
+      >
         <Text style={[styles.description, { color: theme.textSecondary }]}>
           {i18n.t("searchOptionsDescription")}
         </Text>
@@ -163,7 +166,9 @@ const SearchOptionsScreen = ({ onClose }) => {
                 ]}
                 onPress={() => toggleOption(option.key)}
                 accessibilityRole="checkbox"
-                accessibilityState={{ checked: selectedOptions.includes(option.key) }}
+                accessibilityState={{
+                  checked: selectedOptions.includes(option.key),
+                }}
                 accessibilityLabel={option.label}
               >
                 <View style={styles.optionLeft}>
@@ -234,8 +239,12 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
   },
+  contentContainer: {
+    paddingBottom: 24,
+  },
   description: {
-    padding: 16,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
     fontSize: 14,
     lineHeight: 20,
   },
@@ -256,7 +265,7 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     marginHorizontal: 16,
     marginVertical: 4,
-    borderRadius: 8,
+    borderRadius: 6,
     borderWidth: 1,
   },
   optionLeft: {
@@ -275,9 +284,9 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
   checkbox: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
+    width: 22,
+    height: 22,
+    borderRadius: 4,
     borderWidth: 2,
     alignItems: "center",
     justifyContent: "center",
