@@ -115,9 +115,7 @@ const SearchOptionsScreen = ({ onClose }) => {
     <SafeAreaView
       style={[styles.container, { backgroundColor: theme.background }]}
     >
-      <View
-        style={[styles.header, { backgroundColor: theme.backgroundSecondary }]}
-      >
+      <View style={[styles.header, { borderBottomColor: theme.border }]}>
         <Pressable
           onPress={onClose}
           style={styles.backButton}
@@ -212,28 +210,19 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
-    padding: 16,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 5,
+    padding: 20,
+    borderBottomWidth: 1,
   },
   backButton: {
-    padding: 4,
+    marginRight: 20,
   },
   headerTitle: {
     fontSize: 18,
-    fontWeight: "600",
+    fontWeight: "bold",
     flex: 1,
-    textAlign: "center",
   },
   saveButton: {
-    padding: 4,
+    marginLeft: 20,
   },
   saveButtonText: {
     fontSize: 16,

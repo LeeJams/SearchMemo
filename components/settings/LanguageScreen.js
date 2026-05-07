@@ -1,5 +1,6 @@
 import React from "react";
 import { View, Text, StyleSheet, Pressable, FlatList, Alert } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useTheme } from "../../hooks/useTheme";
 import { useLanguage } from "../../hooks/useLanguage";
 import i18n from "../../locales/i18n";
@@ -35,7 +36,7 @@ const LanguageScreen = ({ onClose }) => {
   );
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.background }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
       <View style={[styles.header, { borderBottomColor: theme.border }]}>
         <Pressable
           onPress={onClose}
@@ -55,7 +56,7 @@ const LanguageScreen = ({ onClose }) => {
         renderItem={renderItem}
         keyExtractor={(item) => item.code}
       />
-    </View>
+    </SafeAreaView>
   );
 };
 
