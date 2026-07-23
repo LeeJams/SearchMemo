@@ -3,6 +3,8 @@ const path = require("node:path");
 const testFiles = [
   "../__tests__/memoModel.test.js",
   "../__tests__/optionModel.test.js",
+  "../__tests__/promptModel.test.js",
+  "../__tests__/backupModel.test.js",
 ];
 
 let failures = 0;

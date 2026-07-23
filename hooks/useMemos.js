@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { buildMemo, buildUpdatedMemo, getMemos, storeMemos } from "../utill/memo";
 
+const { migrateMemoCollection } = require("../utill/memoModel");
+
 export function useMemos() {
   const [memos, setMemos] = useState([]);
   const [isInit, setIsInit] = useState(false);
@@ -56,6 +58,10 @@ export function useMemos() {
     setMemos((currentMemos) => currentMemos.filter((memo) => memo.id !== id));
   };
 
+  const replaceMemos = (nextMemos) => {
+    setMemos(migrateMemoCollection(nextMemos));
+  };
+
   return {
     memos,
     isInit,
@@ -63,5 +69,6 @@ export function useMemos() {
     addMemo,
     updateMemo,
     deleteMemo,
+    replaceMemos,
   };
 }

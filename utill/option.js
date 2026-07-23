@@ -228,3 +228,10 @@ export const getActionOptions = async () => {
     return actionOptions; // 기본값 반환
   }
 };
+
+export const getSelectedAIOptions = async () => {
+  const selectedKeys = await getSelectedSearchOptions();
+  return selectedKeys
+    .map((key) => allSearchOptions.find((option) => option.key === key))
+    .filter((option) => option?.region === "ai");
+};

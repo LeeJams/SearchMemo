@@ -2,25 +2,18 @@
   "expo": {
     "name": "MemoFind",
     "slug": "searchmemo",
-    "version": "3.0.0",
+    "version": "3.1.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
-    "splash": {
-      "image": "./assets/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#e1f3f5"
-    },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.leejam.searchmemo",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       },
-      "buildNumber": "3"
+      "buildNumber": "2"
     },
     "android": {
       "adaptiveIcon": {
@@ -28,7 +21,7 @@
         "backgroundColor": "#e1f3f5"
       },
       "package": "com.leejam.searchmemo",
-      "versionCode": 10
+      "versionCode": 12
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -43,15 +36,30 @@
         "expo-build-properties",
         {
           "android": {
-            "compileSdkVersion": 35,
-            "targetSdkVersion": 35,
-            "buildToolsVersion": "35.0.0",
-            "enableProguardInReleaseBuilds": true
+            "compileSdkVersion": 36,
+            "targetSdkVersion": 36,
+            "buildToolsVersion": "36.0.0",
+            "enableMinifyInReleaseBuilds": true
           }
         }
       ],
       "expo-localization",
-      "expo-font"
+      "expo-font",
+      "expo-status-bar",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/icon.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#e1f3f5",
+          "ios": {
+            "image": "./assets/splash.png",
+            "enableFullScreenImage_legacy": true
+          }
+        }
+      ],
+      "expo-sharing"
     ]
   }
 }

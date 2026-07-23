@@ -44,8 +44,9 @@ module.exports = [
       assert.equal(migrated.length, 1);
       assert.equal(migrated[0].id, "123");
       assert.equal(migrated[0].text, "legacy");
-      assert.equal(migrated[0].createdAt, "2025-02-03T00:00:00.000Z");
-      assert.equal(migrated[0].updatedAt, "2025-02-03T00:00:00.000Z");
+      const expectedLocalMidnight = new Date(2025, 1, 3).toISOString();
+      assert.equal(migrated[0].createdAt, expectedLocalMidnight);
+      assert.equal(migrated[0].updatedAt, expectedLocalMidnight);
       assert.equal(migrated[0].schemaVersion, MEMO_SCHEMA_VERSION);
     },
   },

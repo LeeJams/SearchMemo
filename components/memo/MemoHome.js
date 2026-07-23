@@ -6,8 +6,12 @@ import { useEffect, useRef, useState } from "react";
 import MemoList from "./MemoList";
 import EmptyScreen from "../ui/EmptyScreen";
 import { useMemos } from "../../hooks/useMemos";
+import { usePrompts } from "../../hooks/usePrompts";
 import { Feather } from "@expo/vector-icons";
 import RightSheet from "../modal/RightSheet";
+import PromptLibrary from "../prompt/PromptLibrary";
+import PromptEditorModal from "../modal/PromptEditorModal";
+import PromptDetailModal from "../modal/PromptDetailModal";
 import { useTheme } from "../../hooks/useTheme";
 import i18n from "../../locales/i18n";
 
@@ -20,20 +24,46 @@ export default function MemoHome() {
     updateMemo,
     deleteMemo: deleteMemoHandler,
     storageError,
+    replaceMemos,
   } = useMemos();
+  const {
+    prompts,
+    isInit: arePromptsInitialized,
+    addPrompt,
+    updatePrompt,
+    deletePrompt,
+    toggleFavorite,
+    markUsed,
+    storageError: promptStorageError,
+    replacePrompts,
+  } = usePrompts();
+  const [activeLibrary, setActiveLibrary] = useState("memos");
   const [modalState, setModalState] = useState({
     inputVisible: false,
     actionVisible: false,
     selectedMemo: null,
   });
+  const [promptModalState, setPromptModalState] = useState({
+    editorVisible: false,
+    detailVisible: false,
+    editingPromptId: null,
+    selectedPromptId: null,
+  });
   const [isSettingsVisible, setSettingsVisible] = useState(false);
   const inputModalRef = useRef(null);
+  const selectedPrompt =
+    prompts.find(
+      (prompt) => prompt.id === promptModalState.selectedPromptId
+    ) || null;
+  const editingPrompt =
+    prompts.find((prompt) => prompt.id === promptModalState.editingPromptId) ||
+    null;
 
   useEffect(() => {
-    if (storageError) {
+    if (storageError || promptStorageError) {
       Alert.alert(i18n.t("settings"), i18n.t("storageError"));
     }
-  }, [storageError]);
+  }, [storageError, promptStorageError]);
 
   const openInputModal = () =>
     setModalState((prev) => ({ ...prev, inputVisible: true }));
@@ -71,13 +101,57 @@ export default function MemoHome() {
   const openSettings = () => setSettingsVisible(true);
   const closeSettings = () => setSettingsVisible(false);
 
+  const openPromptEditor = (prompt = null) =>
+    setPromptModalState((current) => ({
+      ...current,
+      editorVisible: true,
+      detailVisible: false,
+      editingPromptId: prompt?.id || null,
+    }));
+
+  const closePromptEditor = () =>
+    setPromptModalState((current) => ({
+      ...current,
+      editorVisible: false,
+      editingPromptId: null,
+    }));
+
+  const openPromptDetail = (prompt) =>
+    setPromptModalState((current) => ({
+      ...current,
+      detailVisible: true,
+      selectedPromptId: prompt.id,
+    }));
+
+  const closePromptDetail = () =>
+    setPromptModalState((current) => ({
+      ...current,
+      detailVisible: false,
+      selectedPromptId: null,
+    }));
+
+  const handleSavePrompt = (promptData) => {
+    if (promptData.id) {
+      updatePrompt(promptData);
+    } else {
+      addPrompt(promptData);
+    }
+  };
+
+  const handleImportData = ({ memos: nextMemos, prompts: nextPrompts }) => {
+    replaceMemos(nextMemos);
+    replacePrompts(nextPrompts);
+  };
+
+  const isPromptLibrary = activeLibrary === "prompts";
+
   return (
     <SafeAreaView
       style={[styles.appContainer, { backgroundColor: theme.background }]}
     >
       <View style={[styles.header, { borderBottomColor: theme.border }]}>
         <Text style={[styles.headerTitle, { color: theme.text }]}>
-          {i18n.t("search")}
+          MemoFind
         </Text>
         <Pressable
           style={({ pressed }) => [
@@ -98,9 +172,54 @@ export default function MemoHome() {
       </View>
 
       <View
+        style={[
+          styles.librarySwitch,
+          {
+            backgroundColor: theme.textInputBG,
+            borderColor: theme.border,
+          },
+        ]}
+        accessibilityRole="tablist"
+      >
+        {["memos", "prompts"].map((library) => {
+          const selected = activeLibrary === library;
+          return (
+            <Pressable
+              key={library}
+              style={[
+                styles.libraryTab,
+                selected && { backgroundColor: theme.backgroundSecondary },
+              ]}
+              onPress={() => setActiveLibrary(library)}
+              accessibilityRole="tab"
+              accessibilityState={{ selected }}
+              accessibilityLabel={i18n.t(library)}
+            >
+              <Text
+                style={[
+                  styles.libraryTabText,
+                  { color: selected ? theme.text : theme.textSecondary },
+                ]}
+              >
+                {i18n.t(library)}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </View>
+
+      <View
         style={[styles.memosContainer, { backgroundColor: theme.background }]}
       >
-        {memos.length === 0 && isInit ? (
+        {isPromptLibrary ? (
+          <PromptLibrary
+            prompts={prompts}
+            isInit={arePromptsInitialized}
+            onOpen={openPromptDetail}
+            onToggleFavorite={toggleFavorite}
+            onMarkUsed={markUsed}
+          />
+        ) : memos.length === 0 && isInit ? (
           <EmptyScreen />
         ) : (
           <MemoList memos={memos} openModal={openActionModal} />
@@ -114,13 +233,17 @@ export default function MemoHome() {
             { backgroundColor: theme.addButton },
             pressed && styles.pressed,
           ]}
-          onPress={openInputModal}
+          onPress={
+            isPromptLibrary ? () => openPromptEditor() : openInputModal
+          }
           accessibilityRole="button"
-          accessibilityLabel={i18n.t("writeMemo")}
+          accessibilityLabel={i18n.t(
+            isPromptLibrary ? "newPrompt" : "writeMemo"
+          )}
         >
           <Feather name="plus" size={18} color={theme.addButtonText} />
           <Text style={[styles.buttonText, { color: theme.addButtonText }]}>
-            {i18n.t("writeMemo")}
+            {i18n.t(isPromptLibrary ? "newPrompt" : "writeMemo")}
           </Text>
         </Pressable>
       </View>
@@ -139,7 +262,28 @@ export default function MemoHome() {
         modifyMemo={handleModifyMemo}
         selectedMemo={modalState.selectedMemo}
       />
-      <RightSheet visible={isSettingsVisible} onClose={closeSettings} />
+      <PromptEditorModal
+        visible={promptModalState.editorVisible}
+        prompt={editingPrompt}
+        onClose={closePromptEditor}
+        onSave={handleSavePrompt}
+      />
+      <PromptDetailModal
+        visible={promptModalState.detailVisible}
+        prompt={selectedPrompt}
+        onClose={closePromptDetail}
+        onEdit={openPromptEditor}
+        onDelete={deletePrompt}
+        onToggleFavorite={toggleFavorite}
+        onMarkUsed={markUsed}
+      />
+      <RightSheet
+        visible={isSettingsVisible}
+        onClose={closeSettings}
+        memos={memos}
+        prompts={prompts}
+        onImportData={handleImportData}
+      />
     </SafeAreaView>
   );
 }
@@ -169,6 +313,26 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     alignItems: "center",
     justifyContent: "center",
+  },
+  librarySwitch: {
+    minHeight: 50,
+    flexDirection: "row",
+    marginHorizontal: 16,
+    marginTop: 12,
+    padding: 3,
+    borderWidth: 1,
+    borderRadius: 10,
+  },
+  libraryTab: {
+    flex: 1,
+    minHeight: 44,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 7,
+  },
+  libraryTabText: {
+    fontSize: 14,
+    fontFamily: "NotoSansKR",
   },
   memosContainer: {
     flex: 1,

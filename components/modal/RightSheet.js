@@ -3,7 +3,7 @@ import {
   Modal,
   View,
   StyleSheet,
-  Pressable,
+  TouchableWithoutFeedback,
   useWindowDimensions,
 } from "react-native";
 import Animated, {
@@ -14,21 +14,28 @@ import Animated, {
 } from "react-native-reanimated";
 import SettingsScreen from "../settings/SettingsScreen";
 import { useTheme } from "../../hooks/useTheme";
+import i18n from "../../locales/i18n";
 
-const RightSheet = ({ visible, onClose }) => {
+const RightSheet = ({
+  visible,
+  onClose,
+  memos,
+  prompts,
+  onImportData,
+}) => {
   const { width } = useWindowDimensions();
   const { theme } = useTheme();
   const sheetWidth = width * 0.7;
-  const translateX = useSharedValue(width);
+  const translateX = useSharedValue(sheetWidth);
 
   useEffect(() => {
     if (visible) {
-      translateX.value = withTiming(width - sheetWidth, {
+      translateX.value = withTiming(0, {
         duration: 300,
         easing: Easing.out(Easing.quad),
       });
     } else {
-      translateX.value = withTiming(width, {
+      translateX.value = withTiming(sheetWidth, {
         duration: 300,
         easing: Easing.in(Easing.quad),
       });
@@ -42,12 +49,22 @@ const RightSheet = ({ visible, onClose }) => {
   });
 
   return (
-    <Modal visible={visible} transparent={true} animationType="none">
+    <Modal
+      visible={visible}
+      transparent={true}
+      animationType="none"
+      onRequestClose={onClose}
+    >
       <View style={styles.container}>
-        <Pressable
-          style={[styles.overlay, { backgroundColor: theme.modalOverlay }]}
+        <TouchableWithoutFeedback
           onPress={onClose}
-        />
+          accessibilityRole="button"
+          accessibilityLabel={i18n.t("close")}
+        >
+          <View
+            style={[styles.overlay, { backgroundColor: theme.modalOverlay }]}
+          />
+        </TouchableWithoutFeedback>
         <Animated.View
           style={[
             styles.sheetWrapper,
@@ -63,7 +80,12 @@ const RightSheet = ({ visible, onClose }) => {
               { backgroundColor: theme.backgroundSecondary },
             ]}
           >
-            <SettingsScreen />
+            <SettingsScreen
+              memos={memos}
+              prompts={prompts}
+              onImportData={onImportData}
+              onClose={onClose}
+            />
           </View>
         </Animated.View>
       </View>
@@ -81,7 +103,7 @@ const styles = StyleSheet.create({
   sheetWrapper: {
     position: "absolute",
     top: 0,
-    left: 0,
+    right: 0,
     height: "100%",
   },
   sheetContainer: {
