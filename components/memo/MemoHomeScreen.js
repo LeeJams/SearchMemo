@@ -1,141 +1,57 @@
-import React, { useEffect, useMemo, useReducer, useState } from "react";
-import {
-  Alert,
-  Pressable,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
+import React, { useMemo, useState } from "react";
+import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useMemos } from "../../hooks/useMemos";
-import { useFolders } from "../../hooks/useFolders";
 import { useTheme } from "../../hooks/useTheme";
 import { useLanguage } from "../../hooks/useLanguage";
+import { useMemoStore } from "../../hooks/useMemoStore";
 import i18n from "../../locales/i18n";
 import MemoList from "./MemoList";
 import FolderBar from "./FolderBar";
 import EmptyScreen from "../ui/EmptyScreen";
-import MemoInputModal from "../modal/MemoInputModal";
-import MemoDetailModal from "../modal/MemoDetailModal";
 import FolderManagerModal from "../modal/FolderManagerModal";
 import RightSheet from "../modal/RightSheet";
 
-const {
-  PROMPTS_FOLDER_ID,
-  filterMemos,
-  mergePromptsIntoMemos,
-} = require("../../utill/memoModel");
-const {
-  INITIAL_MEMO_DETAIL_FLOW,
-  memoDetailFlowReducer,
-} = require("../../utill/memoDetailFlow");
+const { filterMemos } = require("../../utill/memoModel");
+const { buildMemoDetailRoute } = require("../../utill/memoDetailFlow");
 
-export default function MemoHome() {
+export default function MemoHomeScreen({ navigation }) {
   const { theme } = useTheme();
   const { locale } = useLanguage();
   const {
     memos,
-    isInit,
-    addMemo,
-    updateMemo,
-    deleteMemo,
-    moveMemosFromFolder,
-    replaceMemos,
-    storageError,
-  } = useMemos();
-  const {
     folders,
-    isInit: areFoldersInitialized,
+    initialized,
+    openEditor,
     addFolder,
     updateFolder,
-    deleteFolder,
-    replaceFolders,
-    storageError: folderStorageError,
-  } = useFolders();
+    removeFolder,
+    importData,
+  } = useMemoStore();
 
   const [query, setQuery] = useState("");
   const [selectedFolderId, setSelectedFolderId] = useState("all");
-  const [selectedMemoId, setSelectedMemoId] = useState(null);
-  const [editingMemoId, setEditingMemoId] = useState(null);
-  const [memoDetailFlow, dispatchMemoDetailFlow] = useReducer(
-    memoDetailFlowReducer,
-    INITIAL_MEMO_DETAIL_FLOW
-  );
-  const { editorVisible, detailVisible } = memoDetailFlow;
   const [foldersVisible, setFoldersVisible] = useState(false);
   const [settingsVisible, setSettingsVisible] = useState(false);
 
-  const selectedMemo =
-    memos.find((memo) => memo.id === selectedMemoId) || null;
-  const editingMemo =
-    memos.find((memo) => memo.id === editingMemoId) || null;
   const visibleMemos = useMemo(
     () => filterMemos(memos, { query, folderId: selectedFolderId }),
     [memos, query, selectedFolderId]
   );
-  const includePromptsFolder = memos.some(
-    (memo) => memo.folderId === PROMPTS_FOLDER_ID
-  );
 
-  useEffect(() => {
-    if (storageError || folderStorageError) {
-      Alert.alert(i18n.t("settings"), i18n.t("storageError"));
-    }
-  }, [storageError, folderStorageError, locale]);
-
-  const openNewMemo = () => {
-    setEditingMemoId(null);
-    dispatchMemoDetailFlow({ type: "openEditor" });
-  };
+  const defaultFolderId = selectedFolderId === "all" ? null : selectedFolderId;
 
   const openDetail = (memo) => {
-    setSelectedMemoId(memo.id);
-    dispatchMemoDetailFlow({ type: "openDetail" });
+    const route = buildMemoDetailRoute(memo);
+    if (route) navigation.navigate(...route);
   };
 
-  const openEditor = (memo) => {
-    setEditingMemoId(memo?.id || null);
-    setSelectedMemoId(memo?.id || selectedMemoId);
-    dispatchMemoDetailFlow({ type: "openEditor" });
-  };
-
-  const saveMemo = (memoData) => {
-    if (memoData.id) {
-      updateMemo(memoData);
-    } else {
-      addMemo(memoData);
-    }
-  };
-
-  const removeMemo = (id = selectedMemoId) => {
-    if (id) deleteMemo(id);
-    dispatchMemoDetailFlow({ type: "closeAll" });
-    setSelectedMemoId(null);
-  };
-
-  const removeFolder = (id) => {
-    moveMemosFromFolder(id, null);
-    deleteFolder(id);
+  const deleteFolder = (id) => {
+    removeFolder(id);
     if (selectedFolderId === id) setSelectedFolderId(null);
   };
 
-  const importData = ({
-    memos: importedMemos,
-    prompts: importedPrompts,
-    folders: importedFolders,
-  }) => {
-    replaceMemos(mergePromptsIntoMemos(importedMemos, importedPrompts));
-    replaceFolders(importedFolders || []);
-  };
-
-  const defaultFolderId =
-    selectedFolderId === "all" ? null : selectedFolderId;
-  const initialized = isInit && areFoldersInitialized;
-  const emptyMessage = query
-    ? i18n.t("noMemoResults")
-    : i18n.t("memoEmpty");
+  const emptyMessage = query ? i18n.t("noMemoResults") : i18n.t("memoEmpty");
 
   return (
     <SafeAreaView
@@ -215,7 +131,7 @@ export default function MemoHome() {
             { backgroundColor: theme.addButton },
             pressed && styles.pressed,
           ]}
-          onPress={openNewMemo}
+          onPress={() => openEditor({ folderId: defaultFolderId })}
           accessibilityRole="button"
           accessibilityLabel={i18n.t("writeMemo")}
         >
@@ -226,32 +142,13 @@ export default function MemoHome() {
         </Pressable>
       </View>
 
-      <MemoInputModal
-        visible={editorVisible}
-        memo={editingMemo}
-        folders={folders}
-        includePromptsFolder={includePromptsFolder}
-        initialFolderId={defaultFolderId}
-        onClose={() => {
-          dispatchMemoDetailFlow({ type: "closeEditor" });
-          setEditingMemoId(null);
-        }}
-        onSave={saveMemo}
-      />
-      <MemoDetailModal
-        visible={detailVisible}
-        memo={selectedMemo}
-        onClose={() => dispatchMemoDetailFlow({ type: "closeDetail" })}
-        onEdit={openEditor}
-        onDelete={removeMemo}
-      />
       <FolderManagerModal
         visible={foldersVisible}
         folders={folders}
         memos={memos}
         onAdd={addFolder}
         onRename={updateFolder}
-        onDelete={removeFolder}
+        onDelete={deleteFolder}
         onClose={() => setFoldersVisible(false)}
       />
       <RightSheet

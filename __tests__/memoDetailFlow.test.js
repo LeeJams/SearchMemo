@@ -3,70 +3,111 @@ const fs = require("node:fs");
 const path = require("node:path");
 
 const {
+  MEMO_HOME_ROUTE,
+  MEMO_DETAIL_ROUTE,
   INITIAL_MEMO_DETAIL_FLOW,
   memoDetailFlowReducer,
   memoActionSheetReducer,
+  buildMemoDetailRoute,
 } = require("../utill/memoDetailFlow");
+
+const readSource = (relativePath) =>
+  fs.readFileSync(path.join(__dirname, relativePath), "utf8");
 
 module.exports = [
   {
-    name: "search and actions stay layered over the open memo detail",
+    name: "opening a memo builds a detail route instead of a modal flag",
     test: () => {
-      const detailState = memoDetailFlowReducer(INITIAL_MEMO_DETAIL_FLOW, {
-        type: "openDetail",
-      });
-      assert.deepEqual(detailState, {
-        editorVisible: false,
-        detailVisible: true,
-      });
-      assert.equal(memoActionSheetReducer(false, { type: "open" }), true);
-      assert.equal(memoActionSheetReducer(true, { type: "close" }), false);
-      assert.equal(detailState.detailVisible, true);
+      assert.equal(MEMO_HOME_ROUTE, "MemoHome");
+      assert.equal(MEMO_DETAIL_ROUTE, "MemoDetail");
+      assert.deepEqual(buildMemoDetailRoute({ id: "memo-1" }), [
+        "MemoDetail",
+        { memoId: "memo-1" },
+      ]);
+      assert.equal(buildMemoDetailRoute(null), null);
+      assert.equal(buildMemoDetailRoute({}), null);
+      assert.equal("detailVisible" in INITIAL_MEMO_DETAIL_FLOW, false);
     },
   },
   {
-    name: "editing or removing a memo dismisses detail action layers",
+    name: "the editor overlays any screen and remembers its target memo",
     test: () => {
-      const layeredState = {
-        editorVisible: false,
-        detailVisible: true,
-      };
+      const editingState = memoDetailFlowReducer(INITIAL_MEMO_DETAIL_FLOW, {
+        type: "openEditor",
+        memoId: "memo-1",
+      });
+      assert.deepEqual(editingState, {
+        editorVisible: true,
+        editingMemoId: "memo-1",
+        editorFolderId: null,
+      });
 
       assert.deepEqual(
-        memoDetailFlowReducer(layeredState, { type: "openEditor" }),
+        memoDetailFlowReducer(INITIAL_MEMO_DETAIL_FLOW, {
+          type: "openEditor",
+          folderId: "folder-1",
+        }),
         {
           editorVisible: true,
-          detailVisible: false,
+          editingMemoId: null,
+          editorFolderId: "folder-1",
         }
       );
+
       assert.deepEqual(
-        memoDetailFlowReducer(layeredState, { type: "closeAll" }),
+        memoDetailFlowReducer(editingState, { type: "closeEditor" }),
         INITIAL_MEMO_DETAIL_FLOW
+      );
+      assert.deepEqual(
+        memoDetailFlowReducer(editingState, { type: "closeAll" }),
+        INITIAL_MEMO_DETAIL_FLOW
+      );
+    },
+  },
+  {
+    name: "search actions stay layered over the open memo detail page",
+    test: () => {
+      assert.equal(memoActionSheetReducer(false, { type: "open" }), true);
+      assert.equal(memoActionSheetReducer(true, { type: "close" }), false);
+
+      const detailSource = readSource("../components/memo/MemoDetailScreen.js");
+      assert.match(detailSource, /<MemoActionModal/);
+      assert.doesNotMatch(
+        readSource("../components/memo/MemoHomeScreen.js"),
+        /<MemoActionModal/
+      );
+    },
+  },
+  {
+    name: "memo detail is a swipe-dismissable stack screen, not a modal",
+    test: () => {
+      const detailSource = readSource("../components/memo/MemoDetailScreen.js");
+      const navigatorSource = readSource(
+        "../components/navigation/RootNavigator.js"
+      );
+      const homeSource = readSource("../components/memo/MemoHomeScreen.js");
+
+      assert.doesNotMatch(detailSource, /<Modal\b/);
+      assert.match(detailSource, /navigation\.goBack\(\)/);
+      assert.match(navigatorSource, /createNativeStackNavigator/);
+      assert.match(navigatorSource, /gestureEnabled: true/);
+      assert.match(navigatorSource, /fullScreenGestureEnabled: true/);
+      assert.match(navigatorSource, /name=\{MEMO_DETAIL_ROUTE\}/);
+      assert.match(homeSource, /navigation\.navigate\(\.\.\.route\)/);
+
+      assert.equal(
+        fs.existsSync(
+          path.join(__dirname, "../components/modal/MemoDetailModal.js")
+        ),
+        false
       );
     },
   },
   {
     name: "detail renders four direct actions in the requested order",
     test: () => {
-      const detailSource = fs.readFileSync(
-        path.join(__dirname, "../components/modal/MemoDetailModal.js"),
-        "utf8"
-      );
-      const homeSource = fs.readFileSync(
-        path.join(__dirname, "../components/memo/MemoHome.js"),
-        "utf8"
-      );
-      const actionSource = fs.readFileSync(
-        path.join(__dirname, "../components/modal/MemoActionModal.js"),
-        "utf8"
-      );
-      const optionSource = fs.readFileSync(
-        path.join(__dirname, "../utill/option.js"),
-        "utf8"
-      );
-
-      assert.match(detailSource, /<MemoActionModal/);
-      assert.doesNotMatch(homeSource, /<MemoActionModal/);
+      const detailSource = readSource("../components/memo/MemoDetailScreen.js");
+      const optionSource = readSource("../utill/option.js");
 
       const deleteIndex = detailSource.indexOf('icon="trash-2"');
       const modifyIndex = detailSource.indexOf('icon="edit-2"');
@@ -79,11 +120,12 @@ module.exports = [
       assert.ok(deleteIndex < modifyIndex);
       assert.ok(modifyIndex < copyIndex);
       assert.ok(copyIndex < searchIndex);
+
       const headerSource = detailSource.slice(
         detailSource.indexOf("<View style={[styles.header"),
         detailSource.indexOf("<ScrollView")
       );
-      assert.doesNotMatch(headerSource, /onEdit/);
+      assert.doesNotMatch(headerSource, /openEditor/);
       assert.match(detailSource, /label=\{i18n\.t\("searchAction"\)\}/);
       assert.match(detailSource, /destructive/);
 
@@ -93,10 +135,7 @@ module.exports = [
   {
     name: "nested search sheet contains search services only",
     test: () => {
-      const actionSource = fs.readFileSync(
-        path.join(__dirname, "../components/modal/MemoActionModal.js"),
-        "utf8"
-      );
+      const actionSource = readSource("../components/modal/MemoActionModal.js");
 
       assert.match(actionSource, /styles\.sheetHeader/);
       assert.match(actionSource, /i18n\.t\("searchServices"\)/);
