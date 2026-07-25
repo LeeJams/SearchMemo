@@ -58,6 +58,20 @@ export function useMemos() {
     setMemos((currentMemos) => currentMemos.filter((memo) => memo.id !== id));
   };
 
+  const moveMemosFromFolder = (folderId, nextFolderId = null) => {
+    setMemos((currentMemos) =>
+      currentMemos.map((memo) =>
+        memo.folderId === folderId
+          ? buildUpdatedMemo(memo, {
+              text: memo.text,
+              color: memo.color,
+              folderId: nextFolderId,
+            })
+          : memo
+      )
+    );
+  };
+
   const replaceMemos = (nextMemos) => {
     setMemos(migrateMemoCollection(nextMemos));
   };
@@ -69,6 +83,7 @@ export function useMemos() {
     addMemo,
     updateMemo,
     deleteMemo,
+    moveMemosFromFolder,
     replaceMemos,
   };
 }

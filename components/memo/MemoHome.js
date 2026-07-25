@@ -1,288 +1,265 @@
-import { Alert, StyleSheet, View, Text, Pressable } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import MemoInputModal from "../modal/MemoInputModal";
-import MemoActionModal from "../modal/MemoActionModal";
-import { useEffect, useRef, useState } from "react";
-import MemoList from "./MemoList";
-import EmptyScreen from "../ui/EmptyScreen";
-import { useMemos } from "../../hooks/useMemos";
-import { usePrompts } from "../../hooks/usePrompts";
+import React, { useEffect, useMemo, useReducer, useState } from "react";
+import {
+  Alert,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 import { Feather } from "@expo/vector-icons";
-import RightSheet from "../modal/RightSheet";
-import PromptLibrary from "../prompt/PromptLibrary";
-import PromptEditorModal from "../modal/PromptEditorModal";
-import PromptDetailModal from "../modal/PromptDetailModal";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useMemos } from "../../hooks/useMemos";
+import { useFolders } from "../../hooks/useFolders";
 import { useTheme } from "../../hooks/useTheme";
+import { useLanguage } from "../../hooks/useLanguage";
 import i18n from "../../locales/i18n";
+import MemoList from "./MemoList";
+import FolderBar from "./FolderBar";
+import EmptyScreen from "../ui/EmptyScreen";
+import MemoInputModal from "../modal/MemoInputModal";
+import MemoDetailModal from "../modal/MemoDetailModal";
+import FolderManagerModal from "../modal/FolderManagerModal";
+import RightSheet from "../modal/RightSheet";
+
+const {
+  PROMPTS_FOLDER_ID,
+  filterMemos,
+  mergePromptsIntoMemos,
+} = require("../../utill/memoModel");
+const {
+  INITIAL_MEMO_DETAIL_FLOW,
+  memoDetailFlowReducer,
+} = require("../../utill/memoDetailFlow");
 
 export default function MemoHome() {
   const { theme } = useTheme();
+  const { locale } = useLanguage();
   const {
     memos,
     isInit,
     addMemo,
     updateMemo,
-    deleteMemo: deleteMemoHandler,
-    storageError,
+    deleteMemo,
+    moveMemosFromFolder,
     replaceMemos,
+    storageError,
   } = useMemos();
   const {
-    prompts,
-    isInit: arePromptsInitialized,
-    addPrompt,
-    updatePrompt,
-    deletePrompt,
-    toggleFavorite,
-    markUsed,
-    storageError: promptStorageError,
-    replacePrompts,
-  } = usePrompts();
-  const [activeLibrary, setActiveLibrary] = useState("memos");
-  const [modalState, setModalState] = useState({
-    inputVisible: false,
-    actionVisible: false,
-    selectedMemo: null,
-  });
-  const [promptModalState, setPromptModalState] = useState({
-    editorVisible: false,
-    detailVisible: false,
-    editingPromptId: null,
-    selectedPromptId: null,
-  });
-  const [isSettingsVisible, setSettingsVisible] = useState(false);
-  const inputModalRef = useRef(null);
-  const selectedPrompt =
-    prompts.find(
-      (prompt) => prompt.id === promptModalState.selectedPromptId
-    ) || null;
-  const editingPrompt =
-    prompts.find((prompt) => prompt.id === promptModalState.editingPromptId) ||
-    null;
+    folders,
+    isInit: areFoldersInitialized,
+    addFolder,
+    updateFolder,
+    deleteFolder,
+    replaceFolders,
+    storageError: folderStorageError,
+  } = useFolders();
+
+  const [query, setQuery] = useState("");
+  const [selectedFolderId, setSelectedFolderId] = useState("all");
+  const [selectedMemoId, setSelectedMemoId] = useState(null);
+  const [editingMemoId, setEditingMemoId] = useState(null);
+  const [memoDetailFlow, dispatchMemoDetailFlow] = useReducer(
+    memoDetailFlowReducer,
+    INITIAL_MEMO_DETAIL_FLOW
+  );
+  const { editorVisible, detailVisible } = memoDetailFlow;
+  const [foldersVisible, setFoldersVisible] = useState(false);
+  const [settingsVisible, setSettingsVisible] = useState(false);
+
+  const selectedMemo =
+    memos.find((memo) => memo.id === selectedMemoId) || null;
+  const editingMemo =
+    memos.find((memo) => memo.id === editingMemoId) || null;
+  const visibleMemos = useMemo(
+    () => filterMemos(memos, { query, folderId: selectedFolderId }),
+    [memos, query, selectedFolderId]
+  );
+  const includePromptsFolder = memos.some(
+    (memo) => memo.folderId === PROMPTS_FOLDER_ID
+  );
 
   useEffect(() => {
-    if (storageError || promptStorageError) {
+    if (storageError || folderStorageError) {
       Alert.alert(i18n.t("settings"), i18n.t("storageError"));
     }
-  }, [storageError, promptStorageError]);
+  }, [storageError, folderStorageError, locale]);
 
-  const openInputModal = () =>
-    setModalState((prev) => ({ ...prev, inputVisible: true }));
-  const closeInputModal = () =>
-    setModalState((prev) => ({ ...prev, inputVisible: false }));
-
-  const openActionModal = (memo) =>
-    setModalState({
-      actionVisible: true,
-      selectedMemo: memo,
-      inputVisible: false,
-    });
-  const closeActionModal = () =>
-    setModalState((prev) => ({
-      ...prev,
-      actionVisible: false,
-      selectedMemo: null,
-    }));
-
-  const handleDeleteMemo = () => {
-    if (modalState.selectedMemo) {
-      deleteMemoHandler(modalState.selectedMemo.id);
-      closeActionModal();
-    }
+  const openNewMemo = () => {
+    setEditingMemoId(null);
+    dispatchMemoDetailFlow({ type: "openEditor" });
   };
 
-  const handleModifyMemo = () => {
-    if (modalState.selectedMemo) {
-      inputModalRef.current.modifyMemoHandler(modalState.selectedMemo);
-      closeActionModal();
-      openInputModal();
-    }
+  const openDetail = (memo) => {
+    setSelectedMemoId(memo.id);
+    dispatchMemoDetailFlow({ type: "openDetail" });
   };
 
-  const openSettings = () => setSettingsVisible(true);
-  const closeSettings = () => setSettingsVisible(false);
+  const openEditor = (memo) => {
+    setEditingMemoId(memo?.id || null);
+    setSelectedMemoId(memo?.id || selectedMemoId);
+    dispatchMemoDetailFlow({ type: "openEditor" });
+  };
 
-  const openPromptEditor = (prompt = null) =>
-    setPromptModalState((current) => ({
-      ...current,
-      editorVisible: true,
-      detailVisible: false,
-      editingPromptId: prompt?.id || null,
-    }));
-
-  const closePromptEditor = () =>
-    setPromptModalState((current) => ({
-      ...current,
-      editorVisible: false,
-      editingPromptId: null,
-    }));
-
-  const openPromptDetail = (prompt) =>
-    setPromptModalState((current) => ({
-      ...current,
-      detailVisible: true,
-      selectedPromptId: prompt.id,
-    }));
-
-  const closePromptDetail = () =>
-    setPromptModalState((current) => ({
-      ...current,
-      detailVisible: false,
-      selectedPromptId: null,
-    }));
-
-  const handleSavePrompt = (promptData) => {
-    if (promptData.id) {
-      updatePrompt(promptData);
+  const saveMemo = (memoData) => {
+    if (memoData.id) {
+      updateMemo(memoData);
     } else {
-      addPrompt(promptData);
+      addMemo(memoData);
     }
   };
 
-  const handleImportData = ({ memos: nextMemos, prompts: nextPrompts }) => {
-    replaceMemos(nextMemos);
-    replacePrompts(nextPrompts);
+  const removeMemo = (id = selectedMemoId) => {
+    if (id) deleteMemo(id);
+    dispatchMemoDetailFlow({ type: "closeAll" });
+    setSelectedMemoId(null);
   };
 
-  const isPromptLibrary = activeLibrary === "prompts";
+  const removeFolder = (id) => {
+    moveMemosFromFolder(id, null);
+    deleteFolder(id);
+    if (selectedFolderId === id) setSelectedFolderId(null);
+  };
+
+  const importData = ({
+    memos: importedMemos,
+    prompts: importedPrompts,
+    folders: importedFolders,
+  }) => {
+    replaceMemos(mergePromptsIntoMemos(importedMemos, importedPrompts));
+    replaceFolders(importedFolders || []);
+  };
+
+  const defaultFolderId =
+    selectedFolderId === "all" ? null : selectedFolderId;
+  const initialized = isInit && areFoldersInitialized;
+  const emptyMessage = query
+    ? i18n.t("noMemoResults")
+    : i18n.t("memoEmpty");
 
   return (
     <SafeAreaView
+      edges={["top", "bottom", "left", "right"]}
       style={[styles.appContainer, { backgroundColor: theme.background }]}
     >
-      <View style={[styles.header, { borderBottomColor: theme.border }]}>
-        <Text style={[styles.headerTitle, { color: theme.text }]}>
-          MemoFind
-        </Text>
+      <View
+        style={[
+          styles.searchContainer,
+          {
+            backgroundColor: theme.textInputBG,
+            borderColor: theme.border,
+          },
+        ]}
+      >
+        <Feather name="search" size={18} color={theme.textSecondary} />
+        <TextInput
+          value={query}
+          onChangeText={setQuery}
+          placeholder={i18n.t("searchMemos")}
+          placeholderTextColor={theme.textSecondary}
+          style={[styles.searchInput, { color: theme.text }]}
+          returnKeyType="search"
+          accessibilityLabel={i18n.t("searchMemos")}
+        />
+        {query ? (
+          <Pressable
+            style={styles.clearButton}
+            onPress={() => setQuery("")}
+            accessibilityRole="button"
+            accessibilityLabel={i18n.t("clearSearch")}
+          >
+            <Feather name="x-circle" size={18} color={theme.textSecondary} />
+          </Pressable>
+        ) : null}
+      </View>
+
+      <FolderBar
+        folders={folders}
+        memos={memos}
+        selectedFolderId={selectedFolderId}
+        onSelectFolder={setSelectedFolderId}
+        onManageFolders={() => setFoldersVisible(true)}
+      />
+
+      <View style={styles.memosContainer}>
+        {initialized && visibleMemos.length === 0 ? (
+          <EmptyScreen message={emptyMessage} />
+        ) : (
+          <MemoList
+            memos={visibleMemos}
+            openMemo={openDetail}
+            locale={locale}
+          />
+        )}
+      </View>
+
+      <View style={styles.floatingActions}>
         <Pressable
           style={({ pressed }) => [
-            styles.headerButton,
+            styles.settingsButton,
             {
               backgroundColor: theme.backgroundSecondary,
               borderColor: theme.border,
             },
             pressed && styles.pressed,
           ]}
-          onPress={openSettings}
-          hitSlop={10}
+          onPress={() => setSettingsVisible(true)}
           accessibilityRole="button"
           accessibilityLabel={i18n.t("settings")}
         >
-          <Feather name="settings" size={18} color={theme.icon} />
+          <Feather name="settings" size={20} color={theme.icon} />
         </Pressable>
-      </View>
-
-      <View
-        style={[
-          styles.librarySwitch,
-          {
-            backgroundColor: theme.textInputBG,
-            borderColor: theme.border,
-          },
-        ]}
-        accessibilityRole="tablist"
-      >
-        {["memos", "prompts"].map((library) => {
-          const selected = activeLibrary === library;
-          return (
-            <Pressable
-              key={library}
-              style={[
-                styles.libraryTab,
-                selected && { backgroundColor: theme.backgroundSecondary },
-              ]}
-              onPress={() => setActiveLibrary(library)}
-              accessibilityRole="tab"
-              accessibilityState={{ selected }}
-              accessibilityLabel={i18n.t(library)}
-            >
-              <Text
-                style={[
-                  styles.libraryTabText,
-                  { color: selected ? theme.text : theme.textSecondary },
-                ]}
-              >
-                {i18n.t(library)}
-              </Text>
-            </Pressable>
-          );
-        })}
-      </View>
-
-      <View
-        style={[styles.memosContainer, { backgroundColor: theme.background }]}
-      >
-        {isPromptLibrary ? (
-          <PromptLibrary
-            prompts={prompts}
-            isInit={arePromptsInitialized}
-            onOpen={openPromptDetail}
-            onToggleFavorite={toggleFavorite}
-            onMarkUsed={markUsed}
-          />
-        ) : memos.length === 0 && isInit ? (
-          <EmptyScreen />
-        ) : (
-          <MemoList memos={memos} openModal={openActionModal} />
-        )}
-      </View>
-
-      <View style={styles.floatingButtonContainer}>
         <Pressable
           style={({ pressed }) => [
             styles.addButton,
             { backgroundColor: theme.addButton },
             pressed && styles.pressed,
           ]}
-          onPress={
-            isPromptLibrary ? () => openPromptEditor() : openInputModal
-          }
+          onPress={openNewMemo}
           accessibilityRole="button"
-          accessibilityLabel={i18n.t(
-            isPromptLibrary ? "newPrompt" : "writeMemo"
-          )}
+          accessibilityLabel={i18n.t("writeMemo")}
         >
-          <Feather name="plus" size={18} color={theme.addButtonText} />
+          <Feather name="plus" size={19} color={theme.addButtonText} />
           <Text style={[styles.buttonText, { color: theme.addButtonText }]}>
-            {i18n.t(isPromptLibrary ? "newPrompt" : "writeMemo")}
+            {i18n.t("writeMemo")}
           </Text>
         </Pressable>
       </View>
 
       <MemoInputModal
-        visible={modalState.inputVisible}
-        closeModal={closeInputModal}
-        addMemo={addMemo}
-        modifyMemo={updateMemo}
-        ref={inputModalRef}
+        visible={editorVisible}
+        memo={editingMemo}
+        folders={folders}
+        includePromptsFolder={includePromptsFolder}
+        initialFolderId={defaultFolderId}
+        onClose={() => {
+          dispatchMemoDetailFlow({ type: "closeEditor" });
+          setEditingMemoId(null);
+        }}
+        onSave={saveMemo}
       />
-      <MemoActionModal
-        visible={modalState.actionVisible}
-        closeModal={closeActionModal}
-        deleteMemo={handleDeleteMemo}
-        modifyMemo={handleModifyMemo}
-        selectedMemo={modalState.selectedMemo}
+      <MemoDetailModal
+        visible={detailVisible}
+        memo={selectedMemo}
+        onClose={() => dispatchMemoDetailFlow({ type: "closeDetail" })}
+        onEdit={openEditor}
+        onDelete={removeMemo}
       />
-      <PromptEditorModal
-        visible={promptModalState.editorVisible}
-        prompt={editingPrompt}
-        onClose={closePromptEditor}
-        onSave={handleSavePrompt}
-      />
-      <PromptDetailModal
-        visible={promptModalState.detailVisible}
-        prompt={selectedPrompt}
-        onClose={closePromptDetail}
-        onEdit={openPromptEditor}
-        onDelete={deletePrompt}
-        onToggleFavorite={toggleFavorite}
-        onMarkUsed={markUsed}
+      <FolderManagerModal
+        visible={foldersVisible}
+        folders={folders}
+        memos={memos}
+        onAdd={addFolder}
+        onRename={updateFolder}
+        onDelete={removeFolder}
+        onClose={() => setFoldersVisible(false)}
       />
       <RightSheet
-        visible={isSettingsVisible}
-        onClose={closeSettings}
+        visible={settingsVisible}
+        onClose={() => setSettingsVisible(false)}
         memos={memos}
-        prompts={prompts}
-        onImportData={handleImportData}
+        folders={folders}
+        onImportData={importData}
       />
     </SafeAreaView>
   );
@@ -292,74 +269,65 @@ const styles = StyleSheet.create({
   appContainer: {
     flex: 1,
   },
-  header: {
+  searchContainer: {
+    minHeight: 44,
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 20,
-    paddingTop: 8,
-    paddingBottom: 14,
-    borderBottomWidth: 1,
-  },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: "700",
-    fontFamily: "NotoSansKR",
-  },
-  headerButton: {
-    width: 38,
-    height: 38,
-    borderRadius: 8,
-    borderWidth: 1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  librarySwitch: {
-    minHeight: 50,
-    flexDirection: "row",
+    gap: 8,
     marginHorizontal: 16,
     marginTop: 12,
-    padding: 3,
+    paddingLeft: 12,
+    paddingRight: 2,
     borderWidth: 1,
-    borderRadius: 10,
+    borderRadius: 11,
   },
-  libraryTab: {
+  searchInput: {
     flex: 1,
-    minHeight: 44,
+    minHeight: 42,
+    fontSize: 14,
+    fontFamily: "NotoSansKR-Regular",
+  },
+  clearButton: {
+    width: 44,
+    height: 44,
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: 7,
-  },
-  libraryTabText: {
-    fontSize: 14,
-    fontFamily: "NotoSansKR",
   },
   memosContainer: {
     flex: 1,
   },
-  floatingButtonContainer: {
+  floatingActions: {
     position: "absolute",
-    bottom: 24,
-    right: 20,
+    right: 16,
+    bottom: 16,
+    flexDirection: "row",
     alignItems: "center",
+    gap: 10,
+  },
+  settingsButton: {
+    width: 48,
+    height: 48,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderRadius: 24,
   },
   addButton: {
+    minWidth: 128,
+    minHeight: 48,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    minWidth: 132,
-    height: 44,
-    paddingHorizontal: 14,
-    borderRadius: 8,
-    gap: 6,
+    gap: 7,
+    paddingHorizontal: 16,
+    borderRadius: 24,
   },
   buttonText: {
     fontSize: 14,
-    fontWeight: "600",
-    fontFamily: "NotoSansKR-Medium",
+    fontFamily: "NotoSansKR",
   },
   pressed: {
     opacity: 0.8,
-    transform: [{ scale: 0.96 }],
+    transform: [{ scale: 0.97 }],
   },
 });

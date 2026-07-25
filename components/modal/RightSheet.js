@@ -12,6 +12,7 @@ import Animated, {
   withTiming,
   Easing,
 } from "react-native-reanimated";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 import SettingsScreen from "../settings/SettingsScreen";
 import { useTheme } from "../../hooks/useTheme";
 import i18n from "../../locales/i18n";
@@ -20,12 +21,12 @@ const RightSheet = ({
   visible,
   onClose,
   memos,
-  prompts,
+  folders,
   onImportData,
 }) => {
   const { width } = useWindowDimensions();
   const { theme } = useTheme();
-  const sheetWidth = width * 0.7;
+  const sheetWidth = Math.min(width, Math.max(320, width * 0.82));
   const translateX = useSharedValue(sheetWidth);
 
   useEffect(() => {
@@ -55,40 +56,42 @@ const RightSheet = ({
       animationType="none"
       onRequestClose={onClose}
     >
-      <View style={styles.container}>
-        <TouchableWithoutFeedback
-          onPress={onClose}
-          accessibilityRole="button"
-          accessibilityLabel={i18n.t("close")}
-        >
-          <View
-            style={[styles.overlay, { backgroundColor: theme.modalOverlay }]}
-          />
-        </TouchableWithoutFeedback>
-        <Animated.View
-          style={[
-            styles.sheetWrapper,
-            {
-              width: sheetWidth,
-            },
-            animatedStyle,
-          ]}
-        >
-          <View
+      <SafeAreaProvider>
+        <View style={styles.container}>
+          <TouchableWithoutFeedback
+            onPress={onClose}
+            accessibilityRole="button"
+            accessibilityLabel={i18n.t("close")}
+          >
+            <View
+              style={[styles.overlay, { backgroundColor: theme.modalOverlay }]}
+            />
+          </TouchableWithoutFeedback>
+          <Animated.View
             style={[
-              styles.sheetContainer,
-              { backgroundColor: theme.backgroundSecondary },
+              styles.sheetWrapper,
+              {
+                width: sheetWidth,
+              },
+              animatedStyle,
             ]}
           >
-            <SettingsScreen
-              memos={memos}
-              prompts={prompts}
-              onImportData={onImportData}
-              onClose={onClose}
-            />
-          </View>
-        </Animated.View>
-      </View>
+            <View
+              style={[
+                styles.sheetContainer,
+                { backgroundColor: theme.backgroundSecondary },
+              ]}
+            >
+              <SettingsScreen
+                memos={memos}
+                folders={folders}
+                onImportData={onImportData}
+                onClose={onClose}
+              />
+            </View>
+          </Animated.View>
+        </View>
+      </SafeAreaProvider>
     </Modal>
   );
 };

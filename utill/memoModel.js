@@ -1,8 +1,21 @@
-const MEMO_SCHEMA_VERSION = 2;
+const MEMO_SCHEMA_VERSION = 3;
+const MEMO_MAX_LENGTH = 20000;
+const MEMO_LIST_MAX_LINES = 3;
 const DEFAULT_MEMO_COLOR = "#e6e6e6";
+const PROMPTS_FOLDER_ID = "prompts";
 
 function normalizeMemoText(text) {
-  return typeof text === "string" ? text.trim() : "";
+  return typeof text === "string"
+    ? text.trim().slice(0, MEMO_MAX_LENGTH)
+    : "";
+}
+
+function normalizeFolderId(folderId) {
+  if (folderId === null || folderId === undefined) {
+    return null;
+  }
+  const normalized = String(folderId).trim();
+  return normalized || null;
 }
 
 function createIsoTimestamp(now = () => new Date()) {
@@ -62,6 +75,7 @@ function createMemo(memoData, { now = () => new Date(), idFactory = createMemoId
     date: formatMemoDateFromIso(timestamp),
     favorite: Boolean(memoData?.favorite),
     tags: Array.isArray(memoData?.tags) ? memoData.tags : [],
+    folderId: normalizeFolderId(memoData?.folderId),
   };
 }
 
@@ -79,6 +93,9 @@ function updateMemo(existingMemo, memoData, { now = () => new Date() } = {}) {
     date: formatMemoDateFromIso(updatedAt),
     favorite: Boolean(existingMemo?.favorite),
     tags: Array.isArray(existingMemo?.tags) ? existingMemo.tags : [],
+    folderId: Object.prototype.hasOwnProperty.call(memoData || {}, "folderId")
+      ? normalizeFolderId(memoData.folderId)
+      : normalizeFolderId(existingMemo?.folderId),
   };
 }
 
@@ -106,6 +123,7 @@ function migrateMemo(memo, { now = () => new Date() } = {}) {
     date: formatMemoDateFromIso(updatedAt),
     favorite: Boolean(memo.favorite),
     tags: Array.isArray(memo.tags) ? memo.tags : [],
+    folderId: normalizeFolderId(memo.folderId),
   };
 }
 
@@ -127,13 +145,119 @@ function parseStoredMemos(jsonValue, options) {
   }
 }
 
+function getMemoTitle(text) {
+  return (
+    normalizeMemoText(text)
+      .split(/\r?\n/)
+      .find((line) => line.trim())
+      ?.trim() || ""
+  );
+}
+
+function getMemoPreview(text) {
+  const lines = normalizeMemoText(text).split(/\r?\n/);
+  const titleIndex = lines.findIndex((line) => line.trim());
+  if (titleIndex < 0) {
+    return "";
+  }
+  return lines
+    .slice(titleIndex + 1)
+    .join("\n")
+    .trim();
+}
+
+function getMemoListContent(text) {
+  return normalizeMemoText(text);
+}
+
+function filterMemos(memos, { query = "", folderId = "all" } = {}) {
+  if (!Array.isArray(memos)) {
+    return [];
+  }
+  const normalizedQuery =
+    typeof query === "string" ? query.trim().toLocaleLowerCase() : "";
+
+  return memos.filter((memo) => {
+    const memoFolderId = normalizeFolderId(memo?.folderId);
+    if (folderId !== "all" && memoFolderId !== normalizeFolderId(folderId)) {
+      return false;
+    }
+    if (!normalizedQuery) {
+      return true;
+    }
+    return [memo?.text, ...(Array.isArray(memo?.tags) ? memo.tags : [])]
+      .filter((value) => typeof value === "string")
+      .join(" ")
+      .toLocaleLowerCase()
+      .includes(normalizedQuery);
+  });
+}
+
+function validTimestamp(value, fallback) {
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? fallback : parsed.toISOString();
+}
+
+function promptText(prompt) {
+  const body = normalizeMemoText(prompt?.body);
+  const title = typeof prompt?.title === "string" ? prompt.title.trim() : "";
+  const firstLine = getMemoTitle(body);
+  if (!title || title === firstLine) {
+    return body;
+  }
+  return normalizeMemoText(`${title}\n\n${body}`);
+}
+
+function promptToMemo(prompt, options = {}) {
+  if (!prompt || typeof prompt !== "object" || !normalizeMemoText(prompt.body)) {
+    return null;
+  }
+  const fallback = createIsoTimestamp(options.now);
+  const createdAt = validTimestamp(prompt.createdAt, fallback);
+  const updatedAt = validTimestamp(prompt.updatedAt, createdAt);
+
+  return {
+    schemaVersion: MEMO_SCHEMA_VERSION,
+    id: `prompt:${String(prompt.id || createMemoId())}`,
+    text: promptText(prompt),
+    color: DEFAULT_MEMO_COLOR,
+    createdAt,
+    updatedAt,
+    date: formatMemoDateFromIso(updatedAt),
+    favorite: Boolean(prompt.favorite),
+    tags: Array.isArray(prompt.tags)
+      ? prompt.tags.filter((tag) => typeof tag === "string")
+      : [],
+    folderId: PROMPTS_FOLDER_ID,
+  };
+}
+
+function mergePromptsIntoMemos(memos, prompts, options) {
+  const migratedMemos = migrateMemoCollection(memos, options);
+  const knownIds = new Set(migratedMemos.map((memo) => memo.id));
+  const converted = Array.isArray(prompts)
+    ? prompts
+        .map((prompt) => promptToMemo(prompt, options))
+        .filter((memo) => memo && !knownIds.has(memo.id))
+    : [];
+  return [...converted, ...migratedMemos];
+}
+
 module.exports = {
   MEMO_SCHEMA_VERSION,
+  MEMO_MAX_LENGTH,
+  MEMO_LIST_MAX_LINES,
   DEFAULT_MEMO_COLOR,
+  PROMPTS_FOLDER_ID,
   normalizeMemoText,
   createMemo,
   updateMemo,
   migrateMemoCollection,
   parseStoredMemos,
   formatMemoDateFromIso,
+  getMemoTitle,
+  getMemoPreview,
+  getMemoListContent,
+  filterMemos,
+  mergePromptsIntoMemos,
 };

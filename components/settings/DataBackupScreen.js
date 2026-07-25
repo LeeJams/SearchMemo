@@ -9,8 +9,9 @@ import {
   View,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useTheme } from "../../hooks/useTheme";
+import { useLanguage } from "../../hooks/useLanguage";
 import { exportBackup, pickAndParseBackup } from "../../utill/backupService";
 import i18n from "../../locales/i18n";
 
@@ -19,17 +20,18 @@ const { mergeBackupData } = require("../../utill/backupModel");
 export default function DataBackupScreen({
   memos,
   prompts,
+  folders,
   onImportData,
   onClose,
 }) {
-  const insets = useSafeAreaInsets();
   const { theme } = useTheme();
+  useLanguage();
   const [isWorking, setIsWorking] = useState(false);
 
   const runExport = async () => {
     setIsWorking(true);
     try {
-      await exportBackup({ memos, prompts });
+      await exportBackup({ memos, prompts, folders });
     } catch (error) {
       console.error("Failed to export backup", error);
       Alert.alert(i18n.t("dataBackup"), i18n.t("backupExportError"));
@@ -59,7 +61,7 @@ export default function DataBackupScreen({
       if (!importedData) return;
 
       const mergedData = mergeBackupData(
-        { memos, prompts },
+        { memos, prompts, folders },
         importedData
       );
       Alert.alert(
@@ -67,6 +69,7 @@ export default function DataBackupScreen({
         i18n.t("backupImportConfirmMessage", {
           memoCount: importedData.memos.length,
           promptCount: importedData.prompts.length,
+          folderCount: importedData.folders.length,
         }),
         [
           { text: i18n.t("cancel"), style: "cancel" },
@@ -91,15 +94,9 @@ export default function DataBackupScreen({
   };
 
   return (
-    <View
-      style={[
-        styles.container,
-        {
-          paddingTop: insets.top,
-          paddingBottom: insets.bottom,
-          backgroundColor: theme.background,
-        },
-      ]}
+    <SafeAreaView
+      edges={["top", "bottom", "left", "right"]}
+      style={[styles.container, { backgroundColor: theme.background }]}
     >
       <View style={[styles.header, { borderBottomColor: theme.border }]}>
         <Pressable
@@ -116,7 +113,10 @@ export default function DataBackupScreen({
         <View style={styles.headerButton} />
       </View>
 
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        contentInsetAdjustmentBehavior="automatic"
+      >
         <View
           style={[
             styles.infoCard,
@@ -134,6 +134,7 @@ export default function DataBackupScreen({
             {i18n.t("backupCounts", {
               memoCount: memos.length,
               promptCount: prompts.length,
+              folderCount: folders.length,
             })}
           </Text>
         </View>
@@ -177,7 +178,7 @@ export default function DataBackupScreen({
           </View>
         )}
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
 

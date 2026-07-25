@@ -1,15 +1,23 @@
 import { StyleSheet, View, Text, Pressable } from "react-native";
 import React from "react";
 import { useTheme } from "../../hooks/useTheme";
-import { Feather } from "@expo/vector-icons";
 
-function MemoItem({ item, openActionModal }) {
+const {
+  getMemoTitle,
+  getMemoListContent,
+  MEMO_LIST_MAX_LINES,
+} = require("../../utill/memoModel");
+
+function MemoItem({ item, openMemo }) {
   const { theme } = useTheme();
   const { text, date, color } = item;
+  const listContent = getMemoListContent(text);
+  const title = getMemoTitle(listContent);
+  const remainingContent = listContent.slice(title.length);
 
   return (
     <Pressable
-      onPress={() => openActionModal(item)}
+      onPress={() => openMemo(item)}
       style={({ pressed }) => [
         styles.memoContainer,
         {
@@ -25,13 +33,21 @@ function MemoItem({ item, openActionModal }) {
     >
       <View style={[styles.colorStrip, { backgroundColor: color }]} />
       <View style={styles.memoContent}>
-        <Text style={[styles.memoText, { color: theme.text }]}>{text}</Text>
+        <Text
+          style={[styles.memoText, { color: theme.text }]}
+          numberOfLines={MEMO_LIST_MAX_LINES}
+          ellipsizeMode="tail"
+        >
+          <Text style={styles.memoTitle}>{title}</Text>
+          {remainingContent ? (
+            <Text style={{ color: theme.textSecondary }}>
+              {remainingContent}
+            </Text>
+          ) : null}
+        </Text>
         <Text style={[styles.dateText, { color: theme.textSecondary }]}>
           {date}
         </Text>
-      </View>
-      <View style={styles.chevronContainer}>
-        <Feather name="chevron-right" size={18} color={theme.textSecondary} />
       </View>
     </Pressable>
   );
@@ -41,10 +57,10 @@ export default React.memo(MemoItem);
 
 const styles = StyleSheet.create({
   memoContainer: {
-    minHeight: 76,
+    minHeight: 82,
     flexDirection: "row",
-    alignItems: "center",
-    borderRadius: 6,
+    alignItems: "stretch",
+    borderRadius: 10,
     borderWidth: 1,
     overflow: "hidden",
   },
@@ -54,21 +70,20 @@ const styles = StyleSheet.create({
   },
   memoContent: {
     flex: 1,
+    gap: 8,
     paddingHorizontal: 14,
-    paddingVertical: 12,
+    paddingVertical: 14,
   },
   memoText: {
     fontSize: 15,
-    lineHeight: 21,
+    lineHeight: 22,
     fontFamily: "NotoSansKR-Regular",
+  },
+  memoTitle: {
+    fontFamily: "NotoSansKR",
   },
   dateText: {
-    marginTop: 6,
     fontSize: 12,
     fontFamily: "NotoSansKR-Regular",
-  },
-  chevronContainer: {
-    paddingLeft: 4,
-    paddingRight: 14,
   },
 });

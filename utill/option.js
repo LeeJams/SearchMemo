@@ -1,4 +1,3 @@
-import i18n from "../locales/i18n";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const {
@@ -18,7 +17,7 @@ export const allSearchOptions = [
     region: "global",
   },
   {
-    label: "Youtube",
+    label: "YouTube",
     key: "youtube",
     baseUrl: "https://www.youtube.com/results?search_query=",
     region: "global",
@@ -32,7 +31,7 @@ export const allSearchOptions = [
   {
     label: "Pinterest",
     key: "pinterest",
-    baseUrl: "https://www.pinterest.co.kr/search/pins/?q=",
+    baseUrl: "https://www.pinterest.com/search/pins/?q=",
     region: "global",
   },
   {
@@ -41,11 +40,17 @@ export const allSearchOptions = [
     baseUrl: "https://www.reddit.com/search/?q=",
     region: "global",
   },
+  {
+    label: "Brave Search",
+    key: "brave",
+    baseUrl: "https://search.brave.com/search?q=",
+    region: "global",
+  },
   // AI 서비스
   {
     label: "ChatGPT",
     key: "chatgpt",
-    baseUrl: "https://chat.openai.com",
+    baseUrl: "https://chatgpt.com",
     region: "ai",
     copyToClipboard: true, // 클립보드 복사 필요
   },
@@ -66,7 +71,7 @@ export const allSearchOptions = [
   {
     label: "Grok",
     key: "grok",
-    baseUrl: "https://x.com/i/grok",
+    baseUrl: "https://grok.com",
     region: "ai",
     copyToClipboard: true, // 클립보드 복사 필요
   },
@@ -76,6 +81,33 @@ export const allSearchOptions = [
     baseUrl: "https://www.perplexity.ai",
     region: "ai",
     copyToClipboard: true, // 클립보드 복사 필요
+  },
+  {
+    label: "Microsoft Copilot",
+    key: "copilot",
+    baseUrl: "https://copilot.com",
+    region: "ai",
+    copyToClipboard: true,
+  },
+  {
+    label: "DeepSeek",
+    key: "deepseek",
+    baseUrl: "https://chat.deepseek.com",
+    region: "ai",
+    copyToClipboard: true,
+  },
+  // 학술 검색
+  {
+    label: "Google Scholar",
+    key: "scholar",
+    baseUrl: "https://scholar.google.com/scholar?q=",
+    region: "research",
+  },
+  {
+    label: "Semantic Scholar",
+    key: "semanticScholar",
+    baseUrl: "https://www.semanticscholar.org/search?q=",
+    region: "research",
   },
   // 한국
   {
@@ -140,32 +172,12 @@ export const allSearchOptions = [
   },
 ];
 
-// 액션 옵션들 (복사, 수정, 삭제)
-export const getFixedActionOptions = () => [
-  {
-    label: i18n.t("copy"),
-    key: "copy",
-  },
-  {
-    label: i18n.t("modify"),
-    key: "edit",
-  },
-  {
-    label: i18n.t("delete"),
-    key: "delete",
-  },
-];
-
 // 기본 선택된 검색 옵션들 (초기값)
 export { defaultSelectedSearchOptions };
 
-// 기존 actionOptions (호환성을 위해 유지, 나중에 deprecated)
-export const actionOptions = [
-  ...allSearchOptions.filter((opt) =>
-    defaultSelectedSearchOptions.includes(opt.key)
-  ),
-  ...getFixedActionOptions(),
-];
+const defaultActionOptions = allSearchOptions.filter((opt) =>
+  defaultSelectedSearchOptions.includes(opt.key)
+);
 
 export const colorOptions = [
   "#e6e6e6",
@@ -222,10 +234,10 @@ export const getActionOptions = async () => {
     const selectedSearchOptions = selectedKeys
       .map((key) => allSearchOptions.find((opt) => opt.key === key))
       .filter(Boolean);
-    return [...selectedSearchOptions, ...getFixedActionOptions()];
+    return selectedSearchOptions;
   } catch (error) {
     console.error("Failed to get action options:", error);
-    return actionOptions; // 기본값 반환
+    return defaultActionOptions;
   }
 };
 

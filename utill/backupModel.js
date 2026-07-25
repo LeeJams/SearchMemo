@@ -1,16 +1,22 @@
 const { migrateMemoCollection } = require("./memoModel");
 const { migratePromptCollection } = require("./promptModel");
+const { migrateFolderCollection } = require("./folderModel");
 
 const BACKUP_FORMAT = "memofind-backup";
-const BACKUP_VERSION = 1;
+const BACKUP_VERSION = 2;
+const SUPPORTED_BACKUP_VERSIONS = [1, BACKUP_VERSION];
 
-function createBackupPayload({ memos, prompts }, now = () => new Date()) {
+function createBackupPayload(
+  { memos, prompts, folders },
+  now = () => new Date()
+) {
   return {
     format: BACKUP_FORMAT,
     version: BACKUP_VERSION,
     exportedAt: now().toISOString(),
-    memos,
-    prompts,
+    memos: Array.isArray(memos) ? memos : [],
+    prompts: Array.isArray(prompts) ? prompts : [],
+    folders: Array.isArray(folders) ? folders : [],
   };
 }
 
@@ -60,6 +66,19 @@ function isValidPrompt(item) {
   );
 }
 
+function isValidFolder(item) {
+  return (
+    item &&
+    typeof item === "object" &&
+    Number.isInteger(item.schemaVersion) &&
+    String(item.id || "").trim() &&
+    typeof item.name === "string" &&
+    item.name.trim() &&
+    isValidTimestamp(item.createdAt) &&
+    isValidTimestamp(item.updatedAt)
+  );
+}
+
 function parseBackup(backupValue, options) {
   let parsed;
   try {
@@ -72,33 +91,42 @@ function parseBackup(backupValue, options) {
   if (
     !parsed ||
     parsed.format !== BACKUP_FORMAT ||
-    parsed.version !== BACKUP_VERSION ||
+    !SUPPORTED_BACKUP_VERSIONS.includes(parsed.version) ||
     !isValidTimestamp(parsed.exportedAt) ||
     !Array.isArray(parsed.memos) ||
-    !Array.isArray(parsed.prompts)
+    !Array.isArray(parsed.prompts) ||
+    (parsed.version >= 2 && !Array.isArray(parsed.folders))
   ) {
     throw new Error("invalid-backup");
   }
 
-  if (!parsed.memos.every(isValidMemo) || !parsed.prompts.every(isValidPrompt)) {
+  const rawFolders = parsed.version >= 2 ? parsed.folders : [];
+  if (
+    !parsed.memos.every(isValidMemo) ||
+    !parsed.prompts.every(isValidPrompt) ||
+    !rawFolders.every(isValidFolder)
+  ) {
     throw new Error("invalid-items");
   }
 
   const memos = migrateMemoCollection(parsed.memos, options);
   const prompts = migratePromptCollection(parsed.prompts, options);
+  const folders = migrateFolderCollection(rawFolders, options);
   if (
     memos.length !== parsed.memos.length ||
-    prompts.length !== parsed.prompts.length
+    prompts.length !== parsed.prompts.length ||
+    folders.length !== rawFolders.length
   ) {
     throw new Error("invalid-items");
   }
 
   return {
     format: BACKUP_FORMAT,
-    version: BACKUP_VERSION,
+    version: parsed.version,
     exportedAt: parsed.exportedAt || null,
     memos,
     prompts,
+    folders,
   };
 }
 
@@ -125,8 +153,15 @@ function mergeByUpdatedAt(localItems, importedItems) {
 
 function mergeBackupData(localData, importedData) {
   return {
-    memos: mergeByUpdatedAt(localData.memos, importedData.memos),
-    prompts: mergeByUpdatedAt(localData.prompts, importedData.prompts),
+    memos: mergeByUpdatedAt(localData.memos || [], importedData.memos || []),
+    prompts: mergeByUpdatedAt(
+      localData.prompts || [],
+      importedData.prompts || []
+    ),
+    folders: mergeByUpdatedAt(
+      localData.folders || [],
+      importedData.folders || []
+    ),
   };
 }
 

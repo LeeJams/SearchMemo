@@ -10,24 +10,29 @@ import {
   Alert,
 } from "react-native";
 import * as Clipboard from "expo-clipboard";
-import { getActionOptions, getFixedActionOptions } from "../../utill/option";
-import React, { useState, useEffect } from "react";
+import { Feather } from "@expo/vector-icons";
+import { getActionOptions } from "../../utill/option";
+import React, { useEffect, useMemo, useState } from "react";
 import { useTheme } from "../../hooks/useTheme";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { searchIconMap } from "../icons/SearchIcons";
 import i18n from "../../locales/i18n";
 
-const NUM_COLUMNS = 3;
+const { buildActionGridRows } = require("../../utill/memoActionLayout");
+const {
+  buildSearchLaunchPlan,
+  executeSearchLaunch,
+} = require("../../utill/searchActionModel");
 
-function MemoActionModal({
-  visible,
-  closeModal,
-  selectedMemo,
-  modifyMemo,
-  deleteMemo,
-}) {
+function MemoActionModal({ visible, closeModal, selectedMemo }) {
   const { theme } = useTheme();
+  const insets = useSafeAreaInsets();
   const [searchOptions, setSearchOptions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const searchOptionRows = useMemo(
+    () => buildActionGridRows(searchOptions),
+    [searchOptions]
+  );
 
   useEffect(() => {
     if (visible) {
@@ -39,12 +44,7 @@ function MemoActionModal({
     try {
       setLoading(true);
       const options = await getActionOptions();
-      // fixedActionOptions를 제외한 검색 옵션만 필터링
-      const fixedOptions = getFixedActionOptions();
-      const searchOpts = options.filter(
-        (opt) => !fixedOptions.some((fixed) => fixed.key === opt.key)
-      );
-      setSearchOptions(searchOpts);
+      setSearchOptions(options);
     } catch (error) {
       console.error("Failed to load action options:", error);
     } finally {
@@ -60,54 +60,19 @@ function MemoActionModal({
     await Linking.openURL(url);
   };
 
-  const confirmDelete = () => {
-    Alert.alert(i18n.t("deleteConfirmTitle"), i18n.t("deleteConfirmMessage"), [
-      { text: i18n.t("cancel"), style: "cancel" },
-      {
-        text: i18n.t("delete"),
-        style: "destructive",
-        onPress: () => {
-          deleteMemo(selectedMemo.id);
-          closeModal();
-        },
-      },
-    ]);
-  };
-
   const handleOptionPress = async (option) => {
     if (!selectedMemo) return;
 
     try {
-      switch (option.key) {
-        case "copy":
-          await Clipboard.setStringAsync(selectedMemo.text);
-          Alert.alert(i18n.t("copy"), i18n.t("copiedToClipboard"));
-          closeModal();
-          break;
-        case "edit":
-          modifyMemo(selectedMemo);
-          closeModal();
-          break;
-        case "delete":
-          confirmDelete();
-          break;
-        default:
-          if (option.baseUrl) {
-            if (option.copyToClipboard) {
-              await Clipboard.setStringAsync(selectedMemo.text);
-              Alert.alert(i18n.t("copy"), i18n.t("copiedToClipboard"));
-              await openExternalUrl(option.baseUrl);
-            } else {
-              await openExternalUrl(
-                option.baseUrl + encodeURIComponent(selectedMemo.text)
-              );
-            }
-          }
-          closeModal();
-      }
+      const launchPlan = buildSearchLaunchPlan(option, selectedMemo.text);
+      await executeSearchLaunch(launchPlan, {
+        copyText: Clipboard.setStringAsync,
+        openUrl: openExternalUrl,
+      });
+      closeModal();
     } catch (error) {
       console.error("Failed to handle memo action:", error);
-      Alert.alert(i18n.t("search"), i18n.t("openLinkError"));
+      Alert.alert(i18n.t("searchAction"), i18n.t("openLinkError"));
     }
   };
 
@@ -115,28 +80,28 @@ function MemoActionModal({
     const IconComponent = searchIconMap[option.key];
     if (!IconComponent) return null;
 
-    // 복사, 수정, 삭제 아이콘은 테마 색상 사용
-    const isActionIcon = ["copy", "edit", "delete"].includes(option.key);
-    const iconColor = isActionIcon ? theme.text : option.color;
-    const iconSize = isActionIcon ? 20 : 23;
-
-    return <IconComponent size={iconSize} color={iconColor} />;
+    return (
+      <IconComponent
+        size={23}
+        color={
+          option.color || (option.key === "chatgpt" ? theme.text : undefined)
+        }
+      />
+    );
   };
 
-  const renderOption = (option, isFixed = false) => (
+  const renderOption = (option) => (
     <View
       key={option.key}
-      style={[
-        isFixed ? styles.fixedOptionWrapper : styles.optionWrapper,
-        {
-          opacity: selectedMemo ? 1 : 0.5,
-        },
-      ]}
+      style={[styles.optionWrapper, { opacity: selectedMemo ? 1 : 0.5 }]}
     >
       <Pressable
         style={({ pressed }) => [
           styles.optionButton,
-          isFixed && styles.fixedOptionButton,
+          {
+            backgroundColor: theme.textInputBG,
+            borderColor: theme.border,
+          },
           pressed && { backgroundColor: theme.textInputBG },
         ]}
         onPress={() => handleOptionPress(option)}
@@ -147,11 +112,7 @@ function MemoActionModal({
       >
         {renderIcon(option)}
         <Text
-          style={[
-            styles.optionText,
-            isFixed && styles.fixedOptionText,
-            { color: theme.text },
-          ]}
+          style={[styles.optionText, { color: theme.text }]}
         >
           {option.label}
         </Text>
@@ -159,53 +120,97 @@ function MemoActionModal({
     </View>
   );
 
-  return (
-    <Modal
-      visible={visible}
-      animationType="slide"
-      onRequestClose={closeModal}
-      transparent={true}
-    >
+  const sheetContent = (
+    <View style={styles.modalLayer}>
       <Pressable
         style={[styles.modalOverlay, { backgroundColor: theme.modalOverlay }]}
         onPress={closeModal}
       >
-        <Pressable
-          style={[
-            styles.optionsContainer,
-            {
-              backgroundColor: theme.backgroundSecondary,
-              borderColor: theme.border,
-            },
-          ]}
-          onPress={(e) => e.stopPropagation()}
-        >
-          <View style={styles.handleContainer}>
-            <View style={[styles.handle, { backgroundColor: theme.border }]} />
-          </View>
-          {loading ? (
-            <View style={styles.loadingContainer}>
-              <ActivityIndicator size="small" color={theme.primary} />
+        <View style={styles.sheetWrapper}>
+          <Pressable
+            style={[
+              styles.optionsContainer,
+              {
+                backgroundColor: theme.backgroundSecondary,
+                borderColor: theme.border,
+              },
+            ]}
+            onPress={(event) => event.stopPropagation()}
+          >
+            <View style={styles.handleContainer}>
+              <View style={[styles.handle, { backgroundColor: theme.border }]} />
             </View>
-          ) : (
-            <>
-              <ScrollView contentContainerStyle={styles.scrollContainer}>
-                {searchOptions.map((option) => renderOption(option, false))}
-              </ScrollView>
+            <View
+              style={[styles.sheetHeader, { borderBottomColor: theme.border }]}
+            >
               <View
                 style={[
-                  styles.fixedActionsContainer,
-                  { borderTopColor: theme.border },
+                  styles.sheetHeaderIcon,
+                  { backgroundColor: theme.textInputBG },
                 ]}
               >
-                {getFixedActionOptions().map((option) =>
-                  renderOption(option, true)
-                )}
+                <Feather name="search" size={20} color={theme.primary} />
               </View>
-            </>
-          )}
-        </Pressable>
+              <Text style={[styles.sheetTitle, { color: theme.text }]}>
+                {i18n.t("searchServices")}
+              </Text>
+              <Pressable
+                style={({ pressed }) => [
+                  styles.closeButton,
+                  pressed && styles.pressed,
+                ]}
+                onPress={closeModal}
+                accessibilityRole="button"
+                accessibilityLabel={i18n.t("close")}
+              >
+                <Feather name="x" size={20} color={theme.textSecondary} />
+              </Pressable>
+            </View>
+            {loading ? (
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator size="small" color={theme.primary} />
+              </View>
+            ) : (
+              <ScrollView
+                style={styles.searchScroll}
+                contentContainerStyle={[
+                  styles.scrollContainer,
+                  { paddingBottom: Math.max(14, insets.bottom + 8) },
+                ]}
+                showsVerticalScrollIndicator={false}
+              >
+                {searchOptionRows.map((row, rowIndex) => (
+                  <View key={`row-${rowIndex}`} style={styles.optionRow}>
+                    {row.map((option, columnIndex) =>
+                      option ? (
+                        renderOption(option)
+                      ) : (
+                        <View
+                          key={`placeholder-${rowIndex}-${columnIndex}`}
+                          style={styles.optionWrapper}
+                          accessibilityElementsHidden
+                          importantForAccessibility="no-hide-descendants"
+                        />
+                      )
+                    )}
+                  </View>
+                ))}
+              </ScrollView>
+            )}
+          </Pressable>
+        </View>
       </Pressable>
+    </View>
+  );
+
+  return (
+    <Modal
+      visible={visible}
+      animationType="fade"
+      onRequestClose={closeModal}
+      transparent
+    >
+      {sheetContent}
     </Modal>
   );
 }
@@ -213,73 +218,96 @@ function MemoActionModal({
 export default React.memo(MemoActionModal);
 
 const styles = StyleSheet.create({
+  modalLayer: {
+    flex: 1,
+  },
   modalOverlay: {
     flex: 1,
     justifyContent: "flex-end",
   },
+  sheetWrapper: {
+    width: "100%",
+    maxHeight: "78%",
+  },
   optionsContainer: {
     width: "100%",
-    borderTopLeftRadius: 8,
-    borderTopRightRadius: 8,
+    maxHeight: "100%",
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
     borderTopWidth: 1,
-    maxHeight: "72%",
     overflow: "hidden",
   },
   handleContainer: {
     alignItems: "center",
-    paddingTop: 10,
-    paddingBottom: 4,
+    paddingTop: 8,
+    paddingBottom: 2,
   },
   handle: {
     width: 36,
     height: 4,
     borderRadius: 2,
   },
-  scrollContainer: {
+  sheetHeader: {
+    minHeight: 58,
     flexDirection: "row",
-    flexWrap: "wrap",
-    paddingHorizontal: 10,
-    paddingTop: 6,
-    paddingBottom: 10,
-  },
-  optionWrapper: {
-    width: `${100 / NUM_COLUMNS}%`,
-    marginVertical: 6,
     alignItems: "center",
+    gap: 10,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
   },
-  fixedActionsContainer: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    borderTopWidth: 1,
-  },
-  fixedOptionWrapper: {
+  sheetHeaderIcon: {
+    width: 36,
+    height: 36,
     alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 10,
+  },
+  sheetTitle: {
     flex: 1,
-  },
-  optionButton: {
-    alignItems: "center",
-    paddingVertical: 10,
-    paddingHorizontal: 8,
-    borderRadius: 6,
-    minWidth: 60,
-  },
-  fixedOptionButton: {
-    paddingVertical: 4,
-    paddingHorizontal: 8,
-  },
-  optionText: {
-    marginTop: 4,
-    fontSize: 14,
+    fontSize: 16,
     fontFamily: "NotoSansKR",
   },
-  fixedOptionText: {
+  closeButton: {
+    width: 44,
+    height: 44,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 22,
+  },
+  searchScroll: {
+    flexShrink: 1,
+  },
+  scrollContainer: {
+    gap: 8,
+    paddingHorizontal: 12,
+    paddingTop: 12,
+  },
+  optionRow: {
+    flexDirection: "row",
+    gap: 8,
+  },
+  optionWrapper: {
+    flex: 1,
+    alignItems: "center",
+  },
+  optionButton: {
+    width: "100%",
+    minHeight: 82,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    paddingVertical: 10,
+    paddingHorizontal: 6,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  optionText: {
     fontSize: 12,
-    marginTop: 2,
+    fontFamily: "NotoSansKR",
+    textAlign: "center",
   },
   pressed: {
-    // backgroundColor는 이제 동적으로 적용됨
+    opacity: 0.72,
   },
   loadingContainer: {
     height: 100,
