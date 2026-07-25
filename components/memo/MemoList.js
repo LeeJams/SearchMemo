@@ -2,10 +2,10 @@ import { StyleSheet, FlatList, View } from "react-native";
 import MemoItem from "./MemoItem";
 import { useCallback } from "react";
 
-function MemoList({ memos, openModal }) {
+function MemoList({ memos, openMemo, locale }) {
   const renderMemoItem = useCallback(
-    ({ item }) => <MemoItem item={item} openActionModal={openModal} />,
-    [openModal]
+    ({ item }) => <MemoItem item={item} openMemo={openMemo} />,
+    [openMemo]
   );
 
   return (
@@ -16,6 +16,7 @@ function MemoList({ memos, openModal }) {
       renderItem={renderMemoItem}
       keyExtractor={(item) => item.id.toString()}
       ItemSeparatorComponent={() => <View style={styles.separator} />}
+      extraData={locale}
       alwaysBounceVertical={false}
       contentInsetAdjustmentBehavior="automatic"
     />
@@ -30,10 +31,10 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     paddingHorizontal: 16,
-    paddingVertical: 14,
-    paddingBottom: 88,
+    paddingTop: 0,
+    paddingBottom: 96,
   },
   separator: {
-    height: 8,
+    height: 10,
   },
 });

@@ -2,8 +2,20 @@ import MemoHome from "./components/memo/MemoHome";
 import { useFonts } from "expo-font";
 import "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import { StatusBar } from "expo-status-bar";
 import { ThemeProvider } from "./hooks/useTheme";
+import { useTheme } from "./hooks/useTheme";
 import { LanguageProvider } from "./hooks/useLanguage";
+
+function AppContent() {
+  const { themeName } = useTheme();
+  return (
+    <>
+      <StatusBar style={themeName === "dark" ? "light" : "dark"} />
+      <MemoHome />
+    </>
+  );
+}
 
 export default function App() {
   const [fontsLoaded] = useFonts({
@@ -19,7 +31,7 @@ export default function App() {
     <SafeAreaProvider>
       <LanguageProvider>
         <ThemeProvider>
-          <MemoHome />
+          <AppContent />
         </ThemeProvider>
       </LanguageProvider>
     </SafeAreaProvider>

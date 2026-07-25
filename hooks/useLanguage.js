@@ -43,10 +43,17 @@ export const LanguageProvider = ({ children }) => {
   }, []);
 
   const changeLanguage = async (code) => {
-    await AsyncStorage.setItem(LANGUAGE_KEY, code);
+    const previousLocale = i18n.locale;
     const nextLocale = setAppLocale(code);
     setLocale(nextLocale);
-    return nextLocale;
+    try {
+      await AsyncStorage.setItem(LANGUAGE_KEY, nextLocale);
+      return nextLocale;
+    } catch (error) {
+      setAppLocale(previousLocale);
+      setLocale(previousLocale);
+      throw error;
+    }
   };
 
   const value = useMemo(

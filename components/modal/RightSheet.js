@@ -3,7 +3,7 @@ import {
   Modal,
   View,
   StyleSheet,
-  Pressable,
+  TouchableWithoutFeedback,
   useWindowDimensions,
 } from "react-native";
 import Animated, {
@@ -12,23 +12,31 @@ import Animated, {
   withTiming,
   Easing,
 } from "react-native-reanimated";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 import SettingsScreen from "../settings/SettingsScreen";
 import { useTheme } from "../../hooks/useTheme";
+import i18n from "../../locales/i18n";
 
-const RightSheet = ({ visible, onClose }) => {
+const RightSheet = ({
+  visible,
+  onClose,
+  memos,
+  folders,
+  onImportData,
+}) => {
   const { width } = useWindowDimensions();
   const { theme } = useTheme();
-  const sheetWidth = width * 0.7;
-  const translateX = useSharedValue(width);
+  const sheetWidth = Math.min(width, Math.max(320, width * 0.82));
+  const translateX = useSharedValue(sheetWidth);
 
   useEffect(() => {
     if (visible) {
-      translateX.value = withTiming(width - sheetWidth, {
+      translateX.value = withTiming(0, {
         duration: 300,
         easing: Easing.out(Easing.quad),
       });
     } else {
-      translateX.value = withTiming(width, {
+      translateX.value = withTiming(sheetWidth, {
         duration: 300,
         easing: Easing.in(Easing.quad),
       });
@@ -42,31 +50,48 @@ const RightSheet = ({ visible, onClose }) => {
   });
 
   return (
-    <Modal visible={visible} transparent={true} animationType="none">
-      <View style={styles.container}>
-        <Pressable
-          style={[styles.overlay, { backgroundColor: theme.modalOverlay }]}
-          onPress={onClose}
-        />
-        <Animated.View
-          style={[
-            styles.sheetWrapper,
-            {
-              width: sheetWidth,
-            },
-            animatedStyle,
-          ]}
-        >
-          <View
+    <Modal
+      visible={visible}
+      transparent={true}
+      animationType="none"
+      onRequestClose={onClose}
+    >
+      <SafeAreaProvider>
+        <View style={styles.container}>
+          <TouchableWithoutFeedback
+            onPress={onClose}
+            accessibilityRole="button"
+            accessibilityLabel={i18n.t("close")}
+          >
+            <View
+              style={[styles.overlay, { backgroundColor: theme.modalOverlay }]}
+            />
+          </TouchableWithoutFeedback>
+          <Animated.View
             style={[
-              styles.sheetContainer,
-              { backgroundColor: theme.backgroundSecondary },
+              styles.sheetWrapper,
+              {
+                width: sheetWidth,
+              },
+              animatedStyle,
             ]}
           >
-            <SettingsScreen />
-          </View>
-        </Animated.View>
-      </View>
+            <View
+              style={[
+                styles.sheetContainer,
+                { backgroundColor: theme.backgroundSecondary },
+              ]}
+            >
+              <SettingsScreen
+                memos={memos}
+                folders={folders}
+                onImportData={onImportData}
+                onClose={onClose}
+              />
+            </View>
+          </Animated.View>
+        </View>
+      </SafeAreaProvider>
     </Modal>
   );
 };
@@ -81,7 +106,7 @@ const styles = StyleSheet.create({
   sheetWrapper: {
     position: "absolute",
     top: 0,
-    left: 0,
+    right: 0,
     height: "100%",
   },
   sheetContainer: {

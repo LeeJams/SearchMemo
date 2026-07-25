@@ -44,6 +44,7 @@ const LanguageScreen = ({ onClose }) => {
 
   return (
     <SafeAreaView
+      edges={["top", "bottom", "left", "right"]}
       style={[styles.container, { backgroundColor: theme.background }]}
     >
       <View style={[styles.header, { borderBottomColor: theme.border }]}>
@@ -64,6 +65,7 @@ const LanguageScreen = ({ onClose }) => {
         data={languages}
         renderItem={renderItem}
         keyExtractor={(item) => item.code}
+        contentInsetAdjustmentBehavior="automatic"
       />
     </SafeAreaView>
   );
@@ -74,13 +76,17 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
+    minHeight: 58,
     flexDirection: "row",
     alignItems: "center",
-    padding: 20,
+    paddingHorizontal: 4,
     borderBottomWidth: 1,
   },
   backButton: {
-    marginRight: 20,
+    width: 48,
+    height: 48,
+    alignItems: "center",
+    justifyContent: "center",
   },
   headerTitle: {
     fontSize: 18,

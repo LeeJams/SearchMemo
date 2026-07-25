@@ -11,6 +11,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
 import { useTheme } from "../../hooks/useTheme";
+import { useLanguage } from "../../hooks/useLanguage";
 import {
   allSearchOptions,
   getSelectedSearchOptions,
@@ -21,6 +22,7 @@ import { searchIconMap } from "../icons/SearchIcons";
 
 const SearchOptionsScreen = ({ onClose }) => {
   const { theme } = useTheme();
+  useLanguage();
   const [selectedOptions, setSelectedOptions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -83,6 +85,7 @@ const SearchOptionsScreen = ({ onClose }) => {
   const regionLabels = {
     global: i18n.t("regionGlobal"),
     ai: i18n.t("regionAI"),
+    research: i18n.t("regionResearch"),
     kr: i18n.t("regionKR"),
     cn: i18n.t("regionCN"),
     jp: i18n.t("regionJP"),
@@ -96,12 +99,20 @@ const SearchOptionsScreen = ({ onClose }) => {
   const renderIcon = (option) => {
     const IconComponent = searchIconMap[option.key];
     if (!IconComponent) return null;
-    return <IconComponent size={20} />;
+    return (
+      <IconComponent
+        size={20}
+        color={
+          option.color || (option.key === "chatgpt" ? theme.text : undefined)
+        }
+      />
+    );
   };
 
   if (loading) {
     return (
       <SafeAreaView
+        edges={["top", "bottom", "left", "right"]}
         style={[styles.container, { backgroundColor: theme.background }]}
       >
         <View style={styles.loadingContainer}>
@@ -113,6 +124,7 @@ const SearchOptionsScreen = ({ onClose }) => {
 
   return (
     <SafeAreaView
+      edges={["top", "bottom", "left", "right"]}
       style={[styles.container, { backgroundColor: theme.background }]}
     >
       <View style={[styles.header, { borderBottomColor: theme.border }]}>
@@ -144,6 +156,7 @@ const SearchOptionsScreen = ({ onClose }) => {
       <ScrollView
         style={styles.content}
         contentContainerStyle={styles.contentContainer}
+        contentInsetAdjustmentBehavior="automatic"
       >
         <Text style={[styles.description, { color: theme.textSecondary }]}>
           {i18n.t("searchOptionsDescription")}
@@ -213,13 +226,17 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   header: {
+    minHeight: 58,
     flexDirection: "row",
     alignItems: "center",
-    padding: 20,
+    paddingHorizontal: 4,
     borderBottomWidth: 1,
   },
   backButton: {
-    marginRight: 20,
+    width: 48,
+    height: 48,
+    alignItems: "center",
+    justifyContent: "center",
   },
   headerTitle: {
     fontSize: 18,
@@ -227,7 +244,11 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   saveButton: {
-    marginLeft: 20,
+    minWidth: 64,
+    minHeight: 48,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 8,
   },
   saveButtonText: {
     fontSize: 16,

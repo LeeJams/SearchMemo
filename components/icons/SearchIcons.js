@@ -128,7 +128,7 @@ export const ChatGPTIcon = ({ size = 24, color }) => (
   <Svg width={size} height={size} viewBox="0 0 50 50" fill="none">
     <Path
       d="M45.403,25.562c-0.506-1.89-1.518-3.553-2.906-4.862c1.134-2.665,0.963-5.724-0.487-8.237 c-1.391-2.408-3.636-4.131-6.322-4.851c-1.891-0.506-3.839-0.462-5.669,0.088C28.276,5.382,25.562,4,22.647,4 c-4.906,0-9.021,3.416-10.116,7.991c-0.01,0.001-0.019-0.003-0.029-0.002c-2.902,0.36-5.404,2.019-6.865,4.549 c-1.391,2.408-1.76,5.214-1.04,7.9c0.507,1.891,1.519,3.556,2.909,4.865c-1.134,2.666-0.97,5.714,0.484,8.234 c1.391,2.408,3.636,4.131,6.322,4.851c0.896,0.24,1.807,0.359,2.711,0.359c1.003,0,1.995-0.161,2.957-0.45 C21.722,44.619,24.425,46,27.353,46c4.911,0,9.028-3.422,10.12-8.003c2.88-0.35,5.431-2.006,6.891-4.535 C45.754,31.054,46.123,28.248,45.403,25.562z M35.17,9.543c2.171,0.581,3.984,1.974,5.107,3.919c1.049,1.817,1.243,4,0.569,5.967 c-0.099-0.062-0.193-0.131-0.294-0.19l-9.169-5.294c-0.312-0.179-0.698-0.177-1.01,0.006l-10.198,6.041l-0.052-4.607l8.663-5.001 C30.733,9.26,33,8.963,35.17,9.543z M29.737,22.195l0.062,5.504l-4.736,2.805l-4.799-2.699l-0.062-5.504l4.736-2.805L29.737,22.195z M14.235,14.412C14.235,9.773,18.009,6,22.647,6c2.109,0,4.092,0.916,5.458,2.488C28,8.544,27.891,8.591,27.787,8.651l-9.17,5.294 c-0.312,0.181-0.504,0.517-0.5,0.877l0.133,11.851l-4.015-2.258V14.412z M6.528,23.921c-0.581-2.17-0.282-4.438,0.841-6.383 c1.06-1.836,2.823-3.074,4.884-3.474c-0.004,0.116-0.018,0.23-0.018,0.348V25c0,0.361,0.195,0.694,0.51,0.872l10.329,5.81 L19.11,34.03l-8.662-5.002C8.502,27.905,7.11,26.092,6.528,23.921z M14.83,40.457c-2.171-0.581-3.984-1.974-5.107-3.919 c-1.053-1.824-1.249-4.001-0.573-5.97c0.101,0.063,0.196,0.133,0.299,0.193l9.169,5.294c0.154,0.089,0.327,0.134,0.5,0.134 c0.177,0,0.353-0.047,0.51-0.14l10.198-6.041l0.052,4.607l-8.663,5.001C19.269,40.741,17.001,41.04,14.83,40.457z M35.765,35.588 c0,4.639-3.773,8.412-8.412,8.412c-2.119,0-4.094-0.919-5.459-2.494c0.105-0.056,0.216-0.098,0.32-0.158l9.17-5.294 c0.312-0.181,0.504-0.517,0.5-0.877L31.75,23.327l4.015,2.258V35.588z M42.631,32.462c-1.056,1.83-2.84,3.086-4.884,3.483 c0.004-0.12,0.018-0.237,0.018-0.357V25c0-0.361-0.195-0.694-0.51-0.872l-10.329-5.81l3.964-2.348l8.662,5.002 c1.946,1.123,3.338,2.937,3.92,5.107C44.053,28.249,43.754,30.517,42.631,32.462z"
-      fill="#000"
+      fill={color || "#111827"}
     />
   </Svg>
 );
@@ -310,6 +310,78 @@ export const EcosiaIcon = ({ size = 24, color }) => (
   </Svg>
 );
 
+// Brave Search
+export const BraveIcon = ({ size = 24, color }) => (
+  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+    <Circle cx="12" cy="12" r="11" fill="#FB542B" />
+    <Path
+      d="M7.2 6.8 9.4 5h5.2l2.2 1.8-.8 2.1.7 1.2-1 5.7L12 19l-3.7-3.2-1-5.7.7-1.2-.8-2.1Z"
+      fill="#FFF"
+    />
+    <Path
+      d="m9.3 10.2 1.6.6L12 9.9l1.1.9 1.6-.6-.6 4.1-2.1 1.8-2.1-1.8-.6-4.1Z"
+      fill="#FB542B"
+    />
+  </Svg>
+);
+
+// Google Scholar
+export const ScholarIcon = ({ size = 24, color }) => (
+  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+    <Circle cx="12" cy="12" r="11" fill="#4285F4" />
+    <Path d="m3.8 9.3 8.2-4.1 8.2 4.1-8.2 4.1-8.2-4.1Z" fill="#FFF" />
+    <Path
+      d="M7.1 11.1v4.2c1.5 1.2 3.1 1.8 4.9 1.8s3.4-.6 4.9-1.8v-4.2L12 13.5l-4.9-2.4Z"
+      fill="#DCE8FF"
+    />
+    <Path d="M19.4 10.1v5.1" stroke="#FFF" strokeWidth="1.4" />
+  </Svg>
+);
+
+// Semantic Scholar
+export const SemanticScholarIcon = ({ size = 24, color }) => (
+  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+    <Circle cx="12" cy="12" r="11" fill="#1857B6" />
+    <Path
+      d="M7 8.1 12 5l5 3.1v6.2L12 17.5 7 14.3V8.1Z"
+      stroke="#FFF"
+      strokeWidth="1.5"
+    />
+    <Circle cx="12" cy="5" r="1.5" fill="#FFF" />
+    <Circle cx="7" cy="14.3" r="1.5" fill="#70D7FF" />
+    <Circle cx="17" cy="14.3" r="1.5" fill="#70D7FF" />
+    <Circle cx="12" cy="11.2" r="1.8" fill="#FFF" />
+  </Svg>
+);
+
+// Microsoft Copilot
+export const CopilotIcon = ({ size = 24, color }) => (
+  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+    <Rect x="2" y="4" width="9" height="8" rx="4" fill="#00A4EF" />
+    <Rect x="8" y="2" width="9" height="8" rx="4" fill="#7FBA00" />
+    <Rect x="13" y="12" width="9" height="8" rx="4" fill="#FFB900" />
+    <Rect x="7" y="14" width="9" height="8" rx="4" fill="#F25022" />
+  </Svg>
+);
+
+// DeepSeek
+export const DeepSeekIcon = ({ size = 24, color }) => (
+  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+    <Circle cx="12" cy="12" r="11" fill="#4D6BFE" />
+    <Path
+      d="M5.1 13.2c2.4.3 4.2-.1 5.6-1.3 1.1-1 2-2.4 3.8-2.4 1.6 0 2.9.9 4.4 2.6-1.1 4.3-4 6.4-7.5 6.4-3 0-5.3-1.8-6.3-5.3Z"
+      fill="#FFF"
+    />
+    <Circle cx="15.8" cy="11.6" r="1" fill="#4D6BFE" />
+    <Path
+      d="M5.4 12.6c-1.2-.5-2-1.4-2.4-2.7 1.5-.1 2.7.4 3.6 1.5"
+      stroke="#FFF"
+      strokeWidth="1.4"
+      strokeLinecap="round"
+    />
+  </Svg>
+);
+
 // Action Icons
 export const CopyIcon = ({ size = 24, color = "#000" }) => (
   <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
@@ -398,11 +470,16 @@ export const searchIconMap = {
   bing: BingIcon,
   pinterest: PinterestIcon,
   reddit: RedditIcon,
+  brave: BraveIcon,
   chatgpt: ChatGPTIcon,
   claude: ClaudeIcon,
   gemini: GeminiIcon,
   grok: GrokIcon,
   perplexity: PerplexityIcon,
+  copilot: CopilotIcon,
+  deepseek: DeepSeekIcon,
+  scholar: ScholarIcon,
+  semanticScholar: SemanticScholarIcon,
   naver: NaverIcon,
   daum: DaumIcon,
   baidu: BaiduIcon,

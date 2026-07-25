@@ -1,244 +1,484 @@
-import { forwardRef, useImperativeHandle, useState } from "react";
+import React, { useEffect, useMemo, useReducer, useState } from "react";
 import {
-  View,
-  TextInput,
-  StyleSheet,
-  Modal,
-  Text,
   KeyboardAvoidingView,
-  Pressable,
+  Modal,
   Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
-import CommonButton from "../ui/CommonButton";
+import {
+  SafeAreaProvider,
+  SafeAreaView,
+} from "react-native-safe-area-context";
 import { colorOptions } from "../../utill/option";
-import i18n from "../../locales/i18n";
+import { useLanguage } from "../../hooks/useLanguage";
 import { useTheme } from "../../hooks/useTheme";
+import i18n from "../../locales/i18n";
 
-const { DEFAULT_MEMO_COLOR } = require("../../utill/memoModel");
+const {
+  DEFAULT_MEMO_COLOR,
+  MEMO_MAX_LENGTH,
+  PROMPTS_FOLDER_ID,
+} = require("../../utill/memoModel");
+const {
+  createMemoColorPaletteState,
+  memoColorPaletteReducer,
+} = require("../../utill/memoEditorModel");
 
-const MemoInputModal = forwardRef((props, ref) => {
+export default function MemoInputModal({
+  visible,
+  memo,
+  folders,
+  includePromptsFolder,
+  initialFolderId,
+  onClose,
+  onSave,
+}) {
   const { theme } = useTheme();
-  const [isModify, setIsModify] = useState(false);
+  const { locale } = useLanguage();
+  const [text, setText] = useState("");
+  const [colorPalette, dispatchColorPalette] = useReducer(
+    memoColorPaletteReducer,
+    createMemoColorPaletteState(DEFAULT_MEMO_COLOR)
+  );
+  const [folderId, setFolderId] = useState(null);
   const [warning, setWarning] = useState(false);
-  const [memoData, setMemoData] = useState({
-    id: null,
-    text: "",
-    color: DEFAULT_MEMO_COLOR,
-    date: "",
-  });
+  const color = colorPalette.selectedColor;
 
-  useImperativeHandle(ref, () => ({
-    modifyMemoHandler,
-  }));
+  useEffect(() => {
+    if (!visible) return;
+    setText(memo?.text || "");
+    dispatchColorPalette({
+      type: "reset",
+      color: memo?.color || DEFAULT_MEMO_COLOR,
+    });
+    setFolderId(memo?.folderId ?? initialFolderId ?? null);
+    setWarning(false);
+  }, [visible, memo, initialFolderId]);
 
-  function modifyMemoHandler(originMemo) {
-    setMemoData(originMemo);
-    setIsModify(true);
-  }
-
-  function memoInputHandler(enteredText) {
-    if (enteredText.length > 0) {
-      setWarning(false);
+  const folderOptions = useMemo(() => {
+    const options = [{ id: null, label: i18n.t("memos") }];
+    if (includePromptsFolder || folderId === PROMPTS_FOLDER_ID) {
+      options.push({ id: PROMPTS_FOLDER_ID, label: i18n.t("prompts") });
     }
-    setMemoData((prevMemoData) => ({ ...prevMemoData, text: enteredText }));
-  }
+    return [
+      ...options,
+      ...folders.map((folder) => ({ id: folder.id, label: folder.name })),
+    ];
+  }, [folders, folderId, includePromptsFolder, locale]);
 
-  function colorSelectHandler(color) {
-    setMemoData((prevMemoData) => ({ ...prevMemoData, color: color }));
-  }
-
-  function addMemoHandler() {
-    if (!memoData.text.trim()) {
+  const save = () => {
+    if (!text.trim()) {
       setWarning(true);
       return;
     }
-    if (isModify) {
-      props.modifyMemo(memoData);
-    } else {
-      props.addMemo(memoData);
-    }
-    modalCloseHandler();
-  }
-
-  function modalCloseHandler() {
-    setMemoData({ id: null, text: "", color: DEFAULT_MEMO_COLOR, date: "" });
-    setIsModify(false);
-    setWarning(false);
-    props.closeModal();
-  }
-
-  const options = colorOptions;
+    onSave({
+      ...(memo || {}),
+      text,
+      color,
+      folderId,
+    });
+    onClose();
+  };
 
   return (
     <Modal
-      visible={props.visible}
+      visible={visible}
       animationType="slide"
-      transparent={true}
-      onRequestClose={modalCloseHandler}
+      presentationStyle="fullScreen"
+      onRequestClose={onClose}
     >
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={styles.modalOverlay}
-      >
-        <Pressable
-          onPress={modalCloseHandler}
-          style={styles.modalPressOverlay}
-        ></Pressable>
-        <View
-          style={[
-            styles.inputContainer,
-            {
-              backgroundColor: theme.backgroundSecondary,
-              borderColor: theme.border,
-            },
-          ]}
+      <SafeAreaProvider>
+        <SafeAreaView
+          edges={["top", "bottom", "left", "right"]}
+          style={[styles.container, { backgroundColor: theme.background }]}
         >
-          <TextInput
-            style={[
-              styles.textInput,
-              {
-                backgroundColor: theme.textInputBG,
-                color: theme.text,
-                borderColor: theme.border,
-              },
-            ]}
-            placeholder={i18n.t("memoPlaceholder")}
-            placeholderTextColor={theme.textSecondary}
-            onChangeText={memoInputHandler}
-            value={memoData.text}
-            autoCapitalize="none"
-            autoCorrect={false}
-            autoFocus={true}
-            multiline={true}
-            maxLength={500}
-            accessibilityLabel={i18n.t("memoPlaceholder")}
-          />
-          {warning && (
-            <Text style={styles.warningText}>{i18n.t("warning")}</Text>
-          )}
-          <View style={styles.colorContainer}>
-            {options.map((color, idx) => (
+          <KeyboardAvoidingView
+            style={styles.container}
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+          >
+            <View style={[styles.header, { borderBottomColor: theme.border }]}>
               <Pressable
-                key={idx}
+                style={styles.headerButton}
+                onPress={onClose}
+                accessibilityRole="button"
+                accessibilityLabel={i18n.t("cancel")}
+              >
+                <Text style={[styles.headerActionText, { color: theme.text }]}>
+                  {i18n.t("cancel")}
+                </Text>
+              </Pressable>
+              <Text style={[styles.headerTitle, { color: theme.text }]}>
+                {i18n.t(memo ? "modify" : "writeMemo")}
+              </Text>
+              <Pressable
+                style={styles.headerButton}
+                onPress={save}
+                accessibilityRole="button"
+                accessibilityLabel={i18n.t("save")}
+              >
+                <Text
+                  style={[styles.headerActionText, { color: theme.primary }]}
+                >
+                  {i18n.t("save")}
+                </Text>
+              </Pressable>
+            </View>
+
+            <View style={styles.editor}>
+              <TextInput
                 style={[
-                  styles.colorButton,
+                  styles.textInput,
                   {
-                    backgroundColor: color,
-                    borderColor:
-                      memoData.color === color ? theme.primary : theme.border,
-                    borderWidth: memoData.color === color ? 2 : 1,
+                    backgroundColor: theme.backgroundSecondary,
+                    color: theme.text,
+                    borderColor: warning ? "#D64545" : theme.border,
                   },
                 ]}
-                onPress={() => colorSelectHandler(color)}
-                accessibilityRole="button"
-                accessibilityState={{ selected: memoData.color === color }}
-                accessibilityLabel={`Color ${idx + 1}`}
-              >
-                {memoData.color === color && (
-                  <Feather name="check" size={18} color={theme.text} />
-                )}
-              </Pressable>
-            ))}
-          </View>
-          <View style={styles.buttonContainer}>
-            <CommonButton
-              onPress={modalCloseHandler}
-              style={[
-                styles.cancelButton,
-                {
-                  backgroundColor: theme.cancelButtonBG,
-                  borderWidth: 0,
-                },
-              ]}
-              textStyle={[
-                styles.cancelButtonText,
-                { color: theme.cancelButtonText },
-              ]}
+                placeholder={i18n.t("memoPlaceholder")}
+                placeholderTextColor={theme.textSecondary}
+                onChangeText={(value) => {
+                  setText(value);
+                  if (value.trim()) setWarning(false);
+                }}
+                value={text}
+                autoCapitalize="sentences"
+                autoCorrect
+                autoFocus
+                multiline
+                scrollEnabled
+                maxLength={MEMO_MAX_LENGTH}
+                textAlignVertical="top"
+                accessibilityLabel={i18n.t("memoPlaceholder")}
+              />
+              <View style={styles.editorMeta}>
+                <Text
+                  style={[
+                    styles.counter,
+                    { color: warning ? "#D64545" : theme.textSecondary },
+                  ]}
+                >
+                  {warning
+                    ? i18n.t("warning")
+                    : `${text.length.toLocaleString()} / ${MEMO_MAX_LENGTH.toLocaleString()}`}
+                </Text>
+              </View>
+            </View>
+
+            <View
+              style={[styles.footer, { borderTopColor: theme.border }]}
             >
-              {i18n.t("cancel")}
-            </CommonButton>
-            <CommonButton
-              onPress={addMemoHandler}
-              style={[
-                styles.addButton,
-                {
-                  backgroundColor: theme.addButton,
-                  borderWidth: 0,
-                },
-              ]}
-              textStyle={[styles.addButtonText, { color: theme.addButtonText }]}
-            >
-              {isModify ? `${i18n.t("modify")}` : `${i18n.t("add")}`}
-            </CommonButton>
-          </View>
-        </View>
-      </KeyboardAvoidingView>
+              {colorPalette.visible ? (
+                <View
+                  style={[
+                    styles.palettePopover,
+                    {
+                      backgroundColor: theme.backgroundSecondary,
+                      borderColor: theme.border,
+                    },
+                  ]}
+                >
+                  <View style={styles.paletteHeader}>
+                    <Text style={[styles.paletteTitle, { color: theme.text }]}>
+                      {i18n.t("memoColor")}
+                    </Text>
+                    <Pressable
+                      style={styles.paletteCloseButton}
+                      onPress={() =>
+                        dispatchColorPalette({ type: "close" })
+                      }
+                      accessibilityRole="button"
+                      accessibilityLabel={i18n.t("close")}
+                    >
+                      <Feather
+                        name="x"
+                        size={18}
+                        color={theme.textSecondary}
+                      />
+                    </Pressable>
+                  </View>
+                  <View style={styles.paletteColors}>
+                    {colorOptions.map((optionColor, index) => (
+                      <Pressable
+                        key={optionColor}
+                        style={[
+                          styles.colorButton,
+                          {
+                            backgroundColor: optionColor,
+                            borderColor:
+                              color === optionColor
+                                ? theme.primary
+                                : theme.border,
+                            borderWidth: color === optionColor ? 2 : 1,
+                          },
+                        ]}
+                        onPress={() =>
+                          dispatchColorPalette({
+                            type: "select",
+                            color: optionColor,
+                          })
+                        }
+                        accessibilityRole="button"
+                        accessibilityState={{
+                          selected: color === optionColor,
+                        }}
+                        accessibilityLabel={`${i18n.t("memoColor")} ${index + 1}`}
+                      >
+                        {color === optionColor ? (
+                          <Feather
+                            name="check"
+                            size={16}
+                            color={theme.text}
+                          />
+                        ) : null}
+                      </Pressable>
+                    ))}
+                  </View>
+                </View>
+              ) : null}
+
+              <View style={styles.footerToolbar}>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  keyboardShouldPersistTaps="handled"
+                  contentContainerStyle={styles.folderOptions}
+                  style={styles.optionsScroll}
+                >
+                  {folderOptions.map((option) => {
+                    const selected = folderId === option.id;
+                    return (
+                      <Pressable
+                        key={option.id || "unfiled"}
+                        style={[
+                          styles.folderChip,
+                          {
+                            backgroundColor: selected
+                              ? theme.primary
+                              : theme.textInputBG,
+                            borderColor: selected
+                              ? theme.primary
+                              : theme.border,
+                          },
+                        ]}
+                        onPress={() => setFolderId(option.id)}
+                        accessibilityRole="button"
+                        accessibilityState={{ selected }}
+                        accessibilityLabel={option.label}
+                      >
+                        <Feather
+                          name="folder"
+                          size={15}
+                          color={selected ? theme.primaryText : theme.icon}
+                        />
+                        <Text
+                          numberOfLines={1}
+                          style={[
+                            styles.folderText,
+                            {
+                              color: selected
+                                ? theme.primaryText
+                                : theme.text,
+                            },
+                          ]}
+                        >
+                          {option.label}
+                        </Text>
+                      </Pressable>
+                    );
+                  })}
+                </ScrollView>
+                <Pressable
+                  style={({ pressed }) => [
+                    styles.paletteButton,
+                    {
+                      backgroundColor: theme.textInputBG,
+                      borderColor: colorPalette.visible
+                        ? theme.primary
+                        : theme.border,
+                    },
+                    pressed && styles.pressed,
+                  ]}
+                  onPress={() =>
+                    dispatchColorPalette({ type: "toggle" })
+                  }
+                  accessibilityRole="button"
+                  accessibilityState={{ expanded: colorPalette.visible }}
+                  accessibilityLabel={i18n.t("memoColor")}
+                >
+                  <View
+                    style={[
+                      styles.currentColor,
+                      {
+                        backgroundColor: color,
+                        borderColor: theme.border,
+                      },
+                    ]}
+                  />
+                  <Feather
+                    name={colorPalette.visible ? "chevron-down" : "chevron-up"}
+                    size={15}
+                    color={theme.icon}
+                  />
+                </Pressable>
+              </View>
+            </View>
+          </KeyboardAvoidingView>
+        </SafeAreaView>
+      </SafeAreaProvider>
     </Modal>
   );
-});
-
-export default MemoInputModal;
+}
 
 const styles = StyleSheet.create({
-  modalOverlay: {
-    flex: 1,
-    justifyContent: "flex-end",
-  },
-  modalPressOverlay: {
+  container: {
     flex: 1,
   },
-  inputContainer: {
-    width: "100%",
-    padding: 18,
-    borderTopLeftRadius: 8,
-    borderTopRightRadius: 8,
-    borderTopWidth: 1,
-  },
-  textInput: {
-    borderRadius: 6,
-    width: "100%",
-    padding: 16,
-    minHeight: 118,
-    textAlignVertical: "top",
-    marginBottom: 8,
-    borderWidth: 1,
-  },
-  buttonContainer: {
+  header: {
+    minHeight: 58,
     flexDirection: "row",
-    justifyContent: "space-between",
-    gap: 10,
-    marginTop: 16,
+    alignItems: "center",
+    borderBottomWidth: 1,
+    paddingHorizontal: 4,
   },
-  warningText: {
-    alignSelf: "flex-start",
-    color: "#ea4747",
-    fontSize: 12,
-    paddingLeft: 12,
+  headerButton: {
+    minWidth: 72,
+    minHeight: 48,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 8,
+  },
+  headerActionText: {
+    fontSize: 15,
     fontFamily: "NotoSansKR",
   },
-  colorContainer: {
+  headerTitle: {
+    flex: 1,
+    textAlign: "center",
+    fontSize: 17,
+    fontFamily: "NotoSansKR",
+  },
+  editor: {
+    flex: 1,
+    paddingHorizontal: 14,
+    paddingTop: 14,
+  },
+  textInput: {
+    flex: 1,
+    minHeight: 220,
+    padding: 17,
+    borderWidth: 1,
+    borderRadius: 12,
+    fontSize: 17,
+    lineHeight: 27,
+    fontFamily: "NotoSansKR-Regular",
+  },
+  editorMeta: {
+    minHeight: 28,
+    alignItems: "flex-end",
+    justifyContent: "center",
+  },
+  counter: {
+    fontSize: 11,
+    fontVariant: ["tabular-nums"],
+    fontFamily: "NotoSansKR-Regular",
+  },
+  footer: {
+    borderTopWidth: 1,
+  },
+  footerToolbar: {
+    minHeight: 58,
     flexDirection: "row",
-    marginVertical: 12,
-    gap: 10,
+    alignItems: "center",
+  },
+  optionsScroll: {
+    flex: 1,
+  },
+  folderOptions: {
+    alignItems: "center",
+    gap: 8,
+    paddingLeft: 14,
+    paddingRight: 8,
+    paddingVertical: 8,
+  },
+  folderChip: {
+    minHeight: 42,
+    maxWidth: 160,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingHorizontal: 13,
+    borderWidth: 1,
+    borderRadius: 21,
+  },
+  folderText: {
+    fontSize: 12,
+    fontFamily: "NotoSansKR",
+  },
+  paletteButton: {
+    width: 52,
+    height: 44,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 5,
+    marginRight: 14,
+    borderWidth: 1,
+    borderRadius: 12,
+  },
+  currentColor: {
+    width: 22,
+    height: 22,
+    borderWidth: 1,
+    borderRadius: 11,
+  },
+  palettePopover: {
+    alignSelf: "flex-end",
+    width: 286,
+    marginTop: 8,
+    marginRight: 14,
+    paddingHorizontal: 12,
+    paddingBottom: 13,
+    borderWidth: 1,
+    borderRadius: 16,
+    boxShadow: "0 6px 20px rgba(0, 0, 0, 0.16)",
+  },
+  paletteHeader: {
+    minHeight: 46,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  paletteTitle: {
+    flex: 1,
+    fontSize: 13,
+    fontFamily: "NotoSansKR",
+  },
+  paletteCloseButton: {
+    width: 44,
+    height: 44,
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: -10,
+  },
+  paletteColors: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 7,
   },
   colorButton: {
     width: 34,
     height: 34,
-    borderRadius: 6,
-    justifyContent: "center",
     alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 17,
   },
-  addButton: {
-    flex: 1,
-    borderRadius: 6,
+  pressed: {
+    opacity: 0.72,
   },
-  addButtonText: {
-    fontWeight: "bold",
-  },
-  cancelButton: {
-    flex: 1,
-    borderRadius: 6,
-  },
-  cancelButtonText: {},
 });
