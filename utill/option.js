@@ -91,6 +91,8 @@ export const allSearchOptions = [
   {
     label: "Perplexity",
     key: "perplexity",
+    // /search is listed in the provider’s apple-app-site-association file.
+    appUrl: "https://www.perplexity.ai/search",
     baseUrl: "https://www.perplexity.ai",
     region: "ai",
     copyToClipboard: true, // 클립보드 복사 필요
@@ -106,6 +108,8 @@ export const allSearchOptions = [
   {
     label: "DeepSeek",
     key: "deepseek",
+    // Verified in the manifest of https://download.deepseek.com/apk/deepseek.apk.
+    androidAppUrl: "dpsk://chat/new",
     baseUrl: "https://chat.deepseek.com",
     region: "ai",
     copyToClipboard: true,
@@ -127,6 +131,8 @@ export const allSearchOptions = [
   {
     label: "Naver",
     key: "naver",
+    // https://developers.naver.com/docs/utils/mobileapp/ (in-app browser v6).
+    appBrowserUrl: "naversearchapp://inappbrowser?version=6&target=new&url=",
     baseUrl: "https://search.naver.com/search.naver?query=",
     region: "kr",
   },

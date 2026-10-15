@@ -262,6 +262,79 @@ module.exports = [
     },
   },
   {
+    name: "native search preserves the query and opens only the installed app",
+    async test() {
+      const option = {
+        baseUrl: "https://search.naver.com/search.naver?query=",
+        appBrowserUrl: "naversearchapp://inappbrowser?version=6&target=new&url=",
+      };
+      const text = "한글 &?#/+ 📝";
+      const plan = buildSearchLaunchPlan(option, text, "ios");
+      assert.equal(new URL(plan.appUrl).searchParams.get("url"), plan.url);
+      assert.equal(new URL(plan.url).searchParams.get("query"), text);
+      const opened = [];
+      await executeSearchLaunch(plan, { openUrl: async (url) => opened.push(url) });
+      assert.deepEqual(opened, [plan.appUrl]);
+      const web = buildSearchLaunchPlan(option, text, "web");
+      assert.equal(web.appUrl, null);
+      assert.equal(web.url, plan.url);
+    },
+  },
+  {
+    name: "a missing search app falls back to the same web search",
+    async test() {
+      const plan = buildSearchLaunchPlan({
+        baseUrl: "https://search.naver.com/search.naver?query=",
+        appBrowserUrl: "naversearchapp://inappbrowser?version=6&target=new&url=",
+      }, "검색 내용", "android");
+      const opened = [];
+      await executeSearchLaunch(plan, { openUrl: async (url) => {
+        opened.push(url);
+        if (url === plan.appUrl) throw new Error("App missing");
+      } });
+      assert.deepEqual(opened, [plan.appUrl, plan.url]);
+    },
+  },
+  {
+    name: "long native searches fit both URL budgets without broken Unicode",
+    test() {
+      const plan = buildSearchLaunchPlan({
+        baseUrl: "https://search.naver.com/search.naver?query=",
+        appBrowserUrl: "naversearchapp://inappbrowser?version=6&target=new&url=",
+      }, "긴 메모 📝 & ".repeat(2000), "android");
+      assert.ok(plan.appUrl.length <= MAX_SEARCH_URL_LENGTH);
+      assert.ok(plan.url.length <= MAX_SEARCH_URL_LENGTH);
+      assert.equal(plan.truncated, true);
+      assert.equal(new URL(plan.appUrl).searchParams.get("url"), plan.url);
+      assert.doesNotMatch(decodeURIComponent(plan.url), /\uFFFD/);
+    },
+  },
+  {
+    name: "platform-specific AI app links do not leak to other platforms",
+    async test() {
+      const option = {
+        baseUrl: "https://chat.deepseek.com",
+        androidAppUrl: "dpsk://chat/new",
+        copyToClipboard: true,
+      };
+      const plan = buildSearchLaunchPlan(option, "full memo", "android");
+      assert.equal(plan.url, option.androidAppUrl);
+      assert.equal(plan.fallbackUrl, option.baseUrl);
+      for (const platform of ["ios", "web"]) {
+        assert.equal(buildSearchLaunchPlan(option, "memo", platform).url, option.baseUrl);
+      }
+      const calls = [];
+      await executeSearchLaunch(plan, {
+        copyText: async (text) => calls.push(["copy", text]),
+        openUrl: async (url) => {
+          calls.push(["open", url]);
+          if (url === option.androidAppUrl) throw new Error("App missing");
+        },
+      });
+      assert.deepEqual(calls, [["copy", "full memo"], ["open", option.androidAppUrl], ["open", option.baseUrl]]);
+    },
+  },
+  {
     name: "search catalog includes audited services and matching icons",
     test() {
       const optionSource = fs.readFileSync(

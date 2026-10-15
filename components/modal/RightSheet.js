@@ -1,17 +1,14 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
+  Animated,
+  Easing,
+  Keyboard,
   Modal,
   View,
   StyleSheet,
-  TouchableWithoutFeedback,
+  Pressable,
   useWindowDimensions,
 } from "react-native";
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-  Easing,
-} from "react-native-reanimated";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import SettingsScreen from "../settings/SettingsScreen";
 import { useTheme } from "../../hooks/useTheme";
@@ -26,47 +23,59 @@ const RightSheet = ({
 }) => {
   const { width } = useWindowDimensions();
   const { theme } = useTheme();
-  const sheetWidth = Math.min(width, Math.max(320, width * 0.82));
-  const translateX = useSharedValue(sheetWidth);
+  // Keep a visible strip of the backdrop, even on narrow phones.
+  const sheetWidth = Math.min(420, width - 48);
+  const [mounted, setMounted] = useState(visible);
+  const progress = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     if (visible) {
-      translateX.value = withTiming(0, {
-        duration: 300,
-        easing: Easing.out(Easing.quad),
-      });
-    } else {
-      translateX.value = withTiming(sheetWidth, {
-        duration: 300,
-        easing: Easing.in(Easing.quad),
-      });
+      Keyboard.dismiss();
+      setMounted(true);
     }
-  }, [visible, width, sheetWidth, translateX]);
+  }, [visible]);
 
-  const animatedStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ translateX: translateX.value }],
-    };
-  });
+  useEffect(() => {
+    if (!mounted) return;
+    const animation = Animated.timing(progress, {
+      toValue: visible ? 1 : 0,
+      duration: visible ? 260 : 220,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: true,
+    });
+    animation.start(({ finished }) => {
+      if (finished && !visible) setMounted(false);
+    });
+    return () => animation.stop();
+  }, [visible, mounted, progress]);
+
+  const animatedStyle = {
+    transform: [{ translateX: progress.interpolate({
+      inputRange: [0, 1],
+      outputRange: [sheetWidth, 0],
+    }) }],
+  };
 
   return (
     <Modal
-      visible={visible}
+      visible={mounted}
       transparent={true}
       animationType="none"
       onRequestClose={onClose}
     >
       <SafeAreaProvider>
         <View style={styles.container}>
-          <TouchableWithoutFeedback
+          <Pressable
             onPress={onClose}
             accessibilityRole="button"
             accessibilityLabel={i18n.t("close")}
+            style={styles.overlay}
           >
-            <View
-              style={[styles.overlay, { backgroundColor: theme.modalOverlay }]}
+            <Animated.View
+              pointerEvents="none"
+              style={[styles.overlay, { backgroundColor: theme.modalOverlay, opacity: progress }]}
             />
-          </TouchableWithoutFeedback>
+          </Pressable>
           <Animated.View
             style={[
               styles.sheetWrapper,

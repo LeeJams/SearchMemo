@@ -32,7 +32,7 @@ const styles = StyleSheet.create({
   contentContainer: {
     paddingHorizontal: 16,
     paddingTop: 0,
-    paddingBottom: 96,
+    paddingBottom: 112,
   },
   separator: {
     height: 10,

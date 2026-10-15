@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { Feather } from "@expo/vector-icons";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTheme } from "../../hooks/useTheme";
 import { useLanguage } from "../../hooks/useLanguage";
 import { useMemoStore } from "../../hooks/useMemoStore";
@@ -17,6 +17,7 @@ const { buildMemoDetailRoute } = require("../../utill/memoDetailFlow");
 
 export default function MemoHomeScreen({ navigation }) {
   const { theme } = useTheme();
+  const insets = useSafeAreaInsets();
   const { locale } = useLanguage();
   const {
     memos,
@@ -109,7 +110,7 @@ export default function MemoHomeScreen({ navigation }) {
         )}
       </View>
 
-      <View style={styles.floatingActions}>
+      <View style={[styles.floatingActions, { bottom: insets.bottom + 28, right: insets.right + 16 }]}>
         <Pressable
           style={({ pressed }) => [
             styles.settingsButton,
@@ -196,7 +197,6 @@ const styles = StyleSheet.create({
   floatingActions: {
     position: "absolute",
     right: 16,
-    bottom: 16,
     flexDirection: "row",
     alignItems: "center",
     gap: 10,
