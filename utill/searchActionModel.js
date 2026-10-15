@@ -23,15 +23,35 @@ function encodeQueryWithinBudget(text, budget) {
   };
 }
 
-function buildSearchLaunchPlan(option, memoText) {
+function buildAIPrefillUrl(option, text) {
+  if (typeof option.prefillUrl !== "string") return null;
+
+  try {
+    const encodedText = encodeURIComponent(text);
+    const url = option.prefillUrl + encodedText + (option.prefillSuffix || "");
+    // Send the complete memo or keep the clipboard flow; never prefill a fragment.
+    return url.length <= MAX_SEARCH_URL_LENGTH ? url : null;
+  } catch {
+    // A malformed UTF-16 string can still be copied, even when it cannot be URL-encoded.
+    return null;
+  }
+}
+
+function buildSearchLaunchPlan(option, memoText, platform) {
   if (!option || typeof option.baseUrl !== "string") {
     throw new TypeError("A search option with a baseUrl is required.");
   }
 
   if (option.copyToClipboard) {
+    const text = String(memoText ?? "");
+    const prefillUrl = buildAIPrefillUrl(option, text);
+    const appUrl = platform === "ios"
+      ? option.iosAppUrl || option.appUrl
+      : option.appUrl;
     return {
-      url: option.baseUrl,
-      clipboardText: String(memoText ?? ""),
+      url: prefillUrl || appUrl || option.baseUrl,
+      fallbackUrl: (prefillUrl || appUrl) ? option.baseUrl : null,
+      clipboardText: text,
       truncated: false,
     };
   }
@@ -67,7 +87,14 @@ async function executeSearchLaunch(
     await copyText(plan.clipboardText);
   }
 
-  await openUrl(plan.url);
+  try {
+    await openUrl(plan.url);
+  } catch (error) {
+    if (!plan.fallbackUrl || plan.fallbackUrl === plan.url) {
+      throw error;
+    }
+    await openUrl(plan.fallbackUrl);
+  }
 }
 
 module.exports = {

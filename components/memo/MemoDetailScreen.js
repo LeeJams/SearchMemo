@@ -1,6 +1,9 @@
-import React, { useReducer, useRef, useState } from "react";
+import React, { useCallback, useEffect, useReducer, useRef, useState } from "react";
 import {
+  ActivityIndicator,
   Alert,
+  Linking,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -10,18 +13,29 @@ import {
 import { Feather } from "@expo/vector-icons";
 import * as Clipboard from "expo-clipboard";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useFocusEffect } from "@react-navigation/native";
 import { useTheme } from "../../hooks/useTheme";
 import { useMemoStore } from "../../hooks/useMemoStore";
+import { getSelectedAIOptions } from "../../utill/option";
 import i18n from "../../locales/i18n";
+import { searchIconMap } from "../icons/SearchIcons";
 import MemoActionModal from "../modal/MemoActionModal";
 
 const { getMemoTitle } = require("../../utill/memoModel");
 const { memoActionSheetReducer } = require("../../utill/memoDetailFlow");
+const { buildActionGridRows } = require("../../utill/memoActionLayout");
+const {
+  buildSearchLaunchPlan,
+  executeSearchLaunch,
+} = require("../../utill/searchActionModel");
 
 export default function MemoDetailScreen({ navigation, route }) {
   const { theme } = useTheme();
   const { findMemo, openEditor, deleteMemo } = useMemoStore();
   const [copied, setCopied] = useState(false);
+  const [aiOptions, setAIOptions] = useState([]);
+  const aiRows = buildActionGridRows(aiOptions, 4);
+  const [launchingService, setLaunchingService] = useState(null);
   const [actionsVisible, dispatchActionSheet] = useReducer(
     memoActionSheetReducer,
     false
@@ -34,6 +48,24 @@ export default function MemoDetailScreen({ navigation, route }) {
   if (storedMemo) lastMemo.current = storedMemo;
   const memo = storedMemo || lastMemo.current;
 
+  useFocusEffect(
+    useCallback(() => {
+      let active = true;
+      getSelectedAIOptions().then((options) => {
+        if (active) setAIOptions(options);
+      });
+      return () => {
+        active = false;
+      };
+    }, [])
+  );
+
+  useEffect(() => {
+    if (!copied) return;
+    const timeout = setTimeout(() => setCopied(false), 2000);
+    return () => clearTimeout(timeout);
+  }, [copied]);
+
   if (!memo) {
     return (
       <View style={[styles.container, { backgroundColor: theme.background }]} />
@@ -43,6 +75,24 @@ export default function MemoDetailScreen({ navigation, route }) {
   const copyMemo = async () => {
     await Clipboard.setStringAsync(memo.text);
     setCopied(true);
+  };
+
+  const launchAI = async (option) => {
+    if (launchingService) return;
+    setLaunchingService(option.key);
+    try {
+      const launchPlan = buildSearchLaunchPlan(option, memo.text, Platform.OS);
+      await executeSearchLaunch(launchPlan, {
+        copyText: Clipboard.setStringAsync,
+        openUrl: (url) => Linking.openURL(url),
+      });
+      setCopied(true);
+    } catch (error) {
+      console.error("Failed to open AI service:", error);
+      Alert.alert(i18n.t("aiServices"), i18n.t("openLinkError"));
+    } finally {
+      setLaunchingService(null);
+    }
   };
 
   const confirmDelete = () => {
@@ -99,36 +149,90 @@ export default function MemoDetailScreen({ navigation, route }) {
         </Text>
       </ScrollView>
 
-      <View
-        style={[
-          styles.toolbar,
-          {
-            backgroundColor: theme.backgroundSecondary,
-            borderTopColor: theme.border,
-          },
-        ]}
-      >
-        <DetailAction
-          icon="trash-2"
-          label={i18n.t("delete")}
-          onPress={confirmDelete}
-          destructive
-        />
-        <DetailAction
-          icon="edit-2"
-          label={i18n.t("modify")}
-          onPress={() => openEditor({ memoId: memo.id })}
-        />
-        <DetailAction
-          icon={copied ? "check" : "copy"}
-          label={i18n.t(copied ? "copied" : "copy")}
-          onPress={copyMemo}
-        />
-        <DetailAction
-          icon="search"
-          label={i18n.t("searchAction")}
-          onPress={() => dispatchActionSheet({ type: "open" })}
-        />
+      <View style={[styles.actionDock, { borderTopColor: theme.border }]}>
+        {aiOptions.length > 0 && (
+          <View style={styles.aiSection}>
+            <View style={styles.aiHeading}>
+              <Text style={[styles.aiTitle, { color: theme.textSecondary }]}>
+                {i18n.t("aiServices")}
+              </Text>
+              <View style={styles.aiHint}>
+                <Feather name="copy" size={11} color={theme.textSecondary} />
+                <Text
+                  style={[styles.aiHintText, { color: theme.textSecondary }]}
+                  numberOfLines={1}
+                  adjustsFontSizeToFit
+                  minimumFontScale={0.8}
+                >
+                  {i18n.t("copyAndOpen")}
+                </Text>
+              </View>
+            </View>
+            <View style={styles.aiGrid}>
+              {aiRows.map((row, rowIndex) => (
+                <View key={`ai-row-${rowIndex}`} style={styles.aiRow}>
+                  {row.map((option, columnIndex) =>
+                    option ? (
+                      <AIShortcut
+                        key={option.key}
+                        option={option}
+                        onPress={() => launchAI(option)}
+                        loading={launchingService === option.key}
+                        disabled={launchingService !== null}
+                      />
+                    ) : (
+                      <View
+                        key={`ai-placeholder-${columnIndex}`}
+                        style={styles.aiPlaceholder}
+                        accessibilityElementsHidden
+                        importantForAccessibility="no-hide-descendants"
+                      />
+                    )
+                  )}
+                </View>
+              ))}
+            </View>
+          </View>
+        )}
+
+        <View
+          style={[
+            styles.toolbar,
+            {
+              backgroundColor: theme.backgroundSecondary,
+              borderColor: theme.border,
+            },
+          ]}
+        >
+          <DetailAction
+            icon="trash-2"
+            label={i18n.t("delete")}
+            onPress={confirmDelete}
+            destructive
+            iconOnly
+          />
+          <DetailAction
+            icon="edit-2"
+            label={i18n.t("modify")}
+            onPress={() => openEditor({ memoId: memo.id })}
+            iconOnly
+          />
+          <View
+            style={[styles.actionDivider, { backgroundColor: theme.border }]}
+          />
+          <DetailAction
+            icon={copied ? "check" : "copy"}
+            label={i18n.t(copied ? "copied" : "copy")}
+            onPress={copyMemo}
+            active={copied}
+          />
+          <DetailAction
+            icon="search"
+            label={i18n.t("searchAction")}
+            onPress={() => dispatchActionSheet({ type: "open" })}
+            prominent
+          />
+        </View>
       </View>
 
       <MemoActionModal
@@ -140,15 +244,69 @@ export default function MemoDetailScreen({ navigation, route }) {
   );
 }
 
-function DetailAction({ icon, label, onPress, destructive = false }) {
+function AIShortcut({ option, onPress, loading, disabled }) {
   const { theme } = useTheme();
-  const foregroundColor = destructive ? "#D14343" : theme.primary;
+  const Icon = searchIconMap[option.key];
+
+  return (
+    <Pressable
+      style={({ pressed }) => [
+        styles.aiButton,
+        { backgroundColor: theme.backgroundSecondary, borderColor: theme.border },
+        disabled && !loading && styles.disabled,
+        pressed && styles.pressed,
+      ]}
+      onPress={onPress}
+      disabled={disabled}
+      accessibilityRole="button"
+      accessibilityLabel={option.label}
+      accessibilityHint={i18n.t("copyAndOpen")}
+      accessibilityState={{ disabled, busy: loading }}
+    >
+      {loading ? (
+        <ActivityIndicator size="small" color={theme.primary} />
+      ) : (
+        <Icon size={26} color={theme.text} />
+      )}
+      <Text
+        style={[styles.aiLabel, { color: theme.text }]}
+        numberOfLines={1}
+        adjustsFontSizeToFit
+        minimumFontScale={0.8}
+      >
+        {option.shortLabel || option.label}
+      </Text>
+    </Pressable>
+  );
+}
+
+function DetailAction({
+  icon,
+  label,
+  onPress,
+  destructive = false,
+  iconOnly = false,
+  prominent = false,
+  active = false,
+}) {
+  const { theme, themeName } = useTheme();
+  const labelColor = prominent
+    ? theme.primaryText
+    : active ? theme.primary : theme.text;
+  let foregroundColor = active ? theme.primary : theme.icon;
+  if (destructive) {
+    foregroundColor = themeName === "dark" ? "#E99087" : "#B45D55";
+  } else if (prominent) {
+    foregroundColor = theme.primaryText;
+  }
 
   return (
     <Pressable
       style={({ pressed }) => [
         styles.action,
-        { backgroundColor: theme.textInputBG },
+        iconOnly && styles.iconAction,
+        prominent && { backgroundColor: theme.addButton },
+        active && { backgroundColor: theme.textInputBG },
         pressed && styles.pressed,
       ]}
       onPress={onPress}
@@ -156,17 +314,19 @@ function DetailAction({ icon, label, onPress, destructive = false }) {
       accessibilityLabel={label}
     >
       <Feather name={icon} size={19} color={foregroundColor} />
-      <Text
-        style={[
-          styles.actionText,
-          { color: destructive ? "#D14343" : theme.text },
-        ]}
-        numberOfLines={1}
-        adjustsFontSizeToFit
-        minimumFontScale={0.72}
-      >
-        {label}
-      </Text>
+      {!iconOnly && (
+        <Text
+          style={[
+            styles.actionText,
+            { color: labelColor },
+          ]}
+          numberOfLines={1}
+          adjustsFontSizeToFit
+          minimumFontScale={0.72}
+        >
+          {label}
+        </Text>
+      )}
     </Pressable>
   );
 }
@@ -212,28 +372,102 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontFamily: "NotoSansKR-Regular",
   },
+  actionDock: {
+    paddingHorizontal: 16,
+    paddingTop: 14,
+    paddingBottom: 8,
+    gap: 16,
+    borderTopWidth: StyleSheet.hairlineWidth,
+  },
+  aiSection: {
+    gap: 12,
+  },
+  aiHeading: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12,
+    paddingHorizontal: 4,
+  },
+  aiTitle: {
+    fontSize: 12,
+    fontFamily: "NotoSansKR",
+  },
+  aiHint: {
+    flexDirection: "row",
+    alignItems: "center",
+    flexShrink: 1,
+    gap: 5,
+  },
+  aiHintText: {
+    flexShrink: 1,
+    fontSize: 11,
+    fontFamily: "NotoSansKR-Regular",
+  },
+  aiGrid: {
+    gap: 8,
+  },
+  aiRow: {
+    flexDirection: "row",
+    gap: 8,
+  },
+  aiPlaceholder: {
+    flex: 1,
+  },
+  aiButton: {
+    flex: 1,
+    minHeight: 76,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    paddingHorizontal: 4,
+    paddingVertical: 12,
+    borderRadius: 18,
+    borderWidth: StyleSheet.hairlineWidth,
+  },
+  aiLabel: {
+    fontSize: 12,
+    fontFamily: "NotoSansKR",
+  },
   toolbar: {
     flexDirection: "row",
-    gap: 6,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-    borderTopWidth: 1,
+    alignItems: "center",
+    gap: 4,
+    padding: 6,
+    borderRadius: 22,
+    borderWidth: StyleSheet.hairlineWidth,
+  },
+  actionDivider: {
+    width: StyleSheet.hairlineWidth,
+    height: 22,
+    marginHorizontal: 2,
   },
   action: {
     flex: 1,
-    minHeight: 58,
+    minHeight: 48,
+    flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    gap: 4,
-    borderRadius: 10,
-    paddingHorizontal: 3,
+    gap: 7,
+    borderRadius: 16,
+    paddingHorizontal: 10,
+  },
+  iconAction: {
+    flex: 0,
+    width: 44,
+    paddingHorizontal: 0,
   },
   actionText: {
-    fontSize: 11,
+    flexShrink: 1,
+    fontSize: 13,
     fontFamily: "NotoSansKR",
     textAlign: "center",
   },
   pressed: {
-    opacity: 0.75,
+    opacity: 0.65,
+    transform: [{ scale: 0.97 }],
+  },
+  disabled: {
+    opacity: 0.45,
   },
 });

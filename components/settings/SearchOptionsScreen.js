@@ -80,7 +80,7 @@ const SearchOptionsScreen = ({ onClose }) => {
     }
     acc[option.region].push(option);
     return acc;
-  }, {});
+  }, { ai: [] });
 
   const regionLabels = {
     global: i18n.t("regionGlobal"),
@@ -167,6 +167,11 @@ const SearchOptionsScreen = ({ onClose }) => {
             <Text style={[styles.regionTitle, { color: theme.text }]}>
               {regionLabels[region] || region}
             </Text>
+            {region === "ai" && (
+              <Text style={[styles.aiDescription, { color: theme.textSecondary }]}>
+                {i18n.t("aiQuickActionsDescription")}
+              </Text>
+            )}
             {options.map((option) => (
               <Pressable
                 key={option.key}
@@ -259,6 +264,11 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+  },
+  aiDescription: {
+    fontSize: 12,
+    lineHeight: 20,
+    marginBottom: 12,
   },
   contentContainer: {
     paddingBottom: 24,

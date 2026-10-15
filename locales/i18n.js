@@ -30,7 +30,7 @@ const translations = {
     regionDE: "Germany",
     regionFR: "France",
     searchOptionsDescription:
-      "Choose search and AI services for your memos. Only selected services will appear in the search list. You must select at least one.",
+      "Choose services for your memos. AI services appear in memo details; search engines appear in Search. Select at least one service.",
     language: "Language",
     searchOptionsWarning: "You must select at least one search engine.",
     systemTheme: "System",
@@ -74,6 +74,9 @@ const translations = {
     copied: "Copied",
     useWithAI: "Use with AI",
     aiServices: "AI Services",
+    copyAndOpen: "Copy & open",
+    aiQuickActionsDescription:
+      "All selected AI services appear in the AI Services section of memo details.",
     noAIServiceSelected:
       "The prompt was copied. Select an AI service in Search settings.",
     chooseAIService: "Choose an AI service",
@@ -95,6 +98,8 @@ const translations = {
     searchAction: "Search",
     searchAndActions: "Search & actions",
     searchServices: "Search services",
+    noSearchServiceSelected:
+      "No search services selected. Choose a search service in Settings.",
     memoActions: "Memo actions",
     memoColor: "Memo color",
     dataBackup: "Data Backup",
@@ -149,7 +154,7 @@ const translations = {
     regionDE: "독일",
     regionFR: "프랑스",
     searchOptionsDescription:
-      "메모에 사용할 검색 및 AI 서비스를 고르세요. 선택한 서비스만 검색 목록에 표시됩니다. 최소 1개 이상 선택해야 합니다.",
+      "메모에 사용할 서비스를 고르세요. AI는 메모 상세에, 검색 엔진은 검색 목록에 표시됩니다. 최소 1개 이상 선택해야 합니다.",
     language: "언어",
     searchOptionsWarning: "하나 이상의 검색 엔진을 선택해야 합니다.",
     systemTheme: "시스템",
@@ -193,6 +198,9 @@ const translations = {
     copied: "복사됨",
     useWithAI: "AI에서 사용",
     aiServices: "AI 서비스",
+    copyAndOpen: "복사 후 열기",
+    aiQuickActionsDescription:
+      "선택한 모든 AI 서비스는 메모 상세의 AI 서비스 영역에 표시됩니다.",
     noAIServiceSelected:
       "프롬프트를 복사했습니다. 검색 설정에서 AI 서비스를 선택해주세요.",
     chooseAIService: "AI 서비스 선택",
@@ -214,6 +222,8 @@ const translations = {
     searchAction: "검색",
     searchAndActions: "검색 및 작업",
     searchServices: "검색 서비스",
+    noSearchServiceSelected:
+      "선택한 검색 서비스가 없습니다. 설정에서 검색 서비스를 선택해주세요.",
     memoActions: "메모 관리",
     memoColor: "메모 색상",
     dataBackup: "데이터 백업",
@@ -268,7 +278,7 @@ const translations = {
     regionDE: "德国",
     regionFR: "法国",
     searchOptionsDescription:
-      "请选择用于备忘录的搜索和 AI 服务。只有选定的服务会出现在搜索列表中。必须至少选择一个。",
+      "请选择用于备忘录的服务。AI 服务显示在备忘录详情中，搜索引擎显示在搜索列表中。必须至少选择一项服务。",
     language: "语言",
     searchOptionsWarning: "您必须至少选择一个搜索引擎。",
     systemTheme: "系统",
@@ -311,6 +321,9 @@ const translations = {
     copied: "已复制",
     useWithAI: "在 AI 中使用",
     aiServices: "AI 服务",
+    copyAndOpen: "复制并打开",
+    aiQuickActionsDescription:
+      "所有选中的 AI 服务都会显示在备忘录详情的 AI 服务区域中。",
     noAIServiceSelected: "提示词已复制。请在搜索设置中选择 AI 服务。",
     chooseAIService: "选择 AI 服务",
     deletePromptTitle: "删除提示词？",
@@ -330,6 +343,7 @@ const translations = {
     searchAction: "搜索",
     searchAndActions: "搜索和操作",
     searchServices: "搜索服务",
+    noSearchServiceSelected: "尚未选择搜索服务。请在设置中选择搜索服务。",
     memoActions: "备忘录操作",
     memoColor: "备忘录颜色",
     dataBackup: "数据备份",
@@ -381,7 +395,7 @@ const translations = {
     regionDE: "ドイツ",
     regionFR: "フランス",
     searchOptionsDescription:
-      "メモに使用する検索・AIサービスを選択してください。選択したサービスのみが検索リストに表示されます。少なくとも1つ選択する必要があります。",
+      "メモに使用するサービスを選択してください。AIはメモ詳細、検索エンジンは検索リストに表示されます。少なくとも1つのサービスを選択してください。",
     language: "言語",
     searchOptionsWarning:
       "少なくとも1つの検索エンジンを選択する必要があります。",
@@ -427,6 +441,9 @@ const translations = {
     copied: "コピー済み",
     useWithAI: "AIで使用",
     aiServices: "AIサービス",
+    copyAndOpen: "コピーして開く",
+    aiQuickActionsDescription:
+      "選択したすべてのAIサービスがメモ詳細のAIサービス欄に表示されます。",
     noAIServiceSelected:
       "プロンプトをコピーしました。検索設定でAIサービスを選択してください。",
     chooseAIService: "AIサービスを選択",
@@ -448,6 +465,8 @@ const translations = {
     searchAction: "検索",
     searchAndActions: "検索と操作",
     searchServices: "検索サービス",
+    noSearchServiceSelected:
+      "検索サービスが選択されていません。設定で検索サービスを選択してください。",
     memoActions: "メモ操作",
     memoColor: "メモの色",
     dataBackup: "データバックアップ",
@@ -502,7 +521,7 @@ const translations = {
     regionDE: "Deutschland",
     regionFR: "Frankreich",
     searchOptionsDescription:
-      "Wählen Sie Such- und KI-Dienste für Ihre Notizen. Nur ausgewählte Dienste erscheinen in der Suchliste. Sie müssen mindestens einen auswählen.",
+      "Wählen Sie Dienste für Ihre Notizen. KI-Dienste erscheinen in den Memo-Details, Suchmaschinen unter Suche. Wählen Sie mindestens einen Dienst.",
     language: "Sprache",
     searchOptionsWarning: "Sie müssen mindestens eine Suchmaschine auswählen.",
     systemTheme: "System",
@@ -547,6 +566,9 @@ const translations = {
     copied: "Kopiert",
     useWithAI: "Mit KI verwenden",
     aiServices: "KI-Dienste",
+    copyAndOpen: "Kopieren & öffnen",
+    aiQuickActionsDescription:
+      "Alle ausgewählten KI-Dienste erscheinen im Bereich KI-Dienste der Memo-Details.",
     noAIServiceSelected:
       "Der Prompt wurde kopiert. Wählen Sie einen KI-Dienst in den Sucheinstellungen.",
     chooseAIService: "KI-Dienst auswählen",
@@ -568,6 +590,8 @@ const translations = {
     searchAction: "Suchen",
     searchAndActions: "Suche & Aktionen",
     searchServices: "Suchdienste",
+    noSearchServiceSelected:
+      "Keine Suchdienste ausgewählt. Wählen Sie einen Suchdienst in den Einstellungen.",
     memoActions: "Memo-Aktionen",
     memoColor: "Memo-Farbe",
     dataBackup: "Datensicherung",
@@ -622,7 +646,7 @@ const translations = {
     regionDE: "Германия",
     regionFR: "Франция",
     searchOptionsDescription:
-      "Выберите поисковые и ИИ-сервисы для заметок. В списке появятся только выбранные сервисы. Нужно выбрать хотя бы один.",
+      "Выберите сервисы для заметок. ИИ-сервисы появятся в заметке, поисковые системы — в поиске. Выберите хотя бы один сервис.",
     language: "Язык",
     searchOptionsWarning: "Вы должны выбрать хотя бы одну поисковую систему.",
     systemTheme: "Системная",
@@ -667,6 +691,9 @@ const translations = {
     copied: "Скопировано",
     useWithAI: "Использовать с ИИ",
     aiServices: "Сервисы ИИ",
+    copyAndOpen: "Скопировать и открыть",
+    aiQuickActionsDescription:
+      "Все выбранные ИИ-сервисы отображаются в разделе «Сервисы ИИ» внутри заметки.",
     noAIServiceSelected:
       "Промпт скопирован. Выберите сервис ИИ в настройках поиска.",
     chooseAIService: "Выберите сервис ИИ",
@@ -688,6 +715,8 @@ const translations = {
     searchAction: "Поиск",
     searchAndActions: "Поиск и действия",
     searchServices: "Поисковые сервисы",
+    noSearchServiceSelected:
+      "Поисковые сервисы не выбраны. Выберите поисковый сервис в настройках.",
     memoActions: "Действия с заметкой",
     memoColor: "Цвет заметки",
     dataBackup: "Резервная копия",
@@ -742,7 +771,7 @@ const translations = {
     regionDE: "जर्मनी",
     regionFR: "फ्रांस",
     searchOptionsDescription:
-      "अपने मेमो के लिए खोज और AI सेवाएं चुनें। केवल चुनी गई सेवाएं खोज सूची में दिखाई देंगी। कम से कम एक सेवा चुनना ज़रूरी है।",
+      "अपने मेमो के लिए सेवाएं चुनें। AI सेवाएं मेमो के विवरण में और खोज इंजन खोज सूची में दिखेंगे। कम से कम एक सेवा चुनें।",
     language: "भाषा",
     searchOptionsWarning: "आपको कम से कम एक खोज इंजन का चयन करना होगा।",
     systemTheme: "सिस्टम",
@@ -787,6 +816,9 @@ const translations = {
     copied: "कॉपी हुआ",
     useWithAI: "AI के साथ उपयोग करें",
     aiServices: "AI सेवाएं",
+    copyAndOpen: "कॉपी करके खोलें",
+    aiQuickActionsDescription:
+      "चुनी गई सभी AI सेवाएं मेमो के विवरण के AI सेवाएं भाग में दिखती हैं।",
     noAIServiceSelected:
       "प्रॉम्प्ट कॉपी हो गया। खोज सेटिंग्स में AI सेवा चुनें।",
     chooseAIService: "AI सेवा चुनें",
@@ -808,6 +840,8 @@ const translations = {
     searchAction: "खोज",
     searchAndActions: "खोज और क्रियाएं",
     searchServices: "खोज सेवाएं",
+    noSearchServiceSelected:
+      "कोई खोज सेवा नहीं चुनी गई है। सेटिंग्स में खोज सेवा चुनें।",
     memoActions: "मेमो क्रियाएं",
     memoColor: "मेमो का रंग",
     dataBackup: "डेटा बैकअप",

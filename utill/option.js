@@ -1,11 +1,14 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const {
+  SEARCH_OPTIONS_VERSION,
   defaultSelectedSearchOptions,
+  migrateSelectedSearchOptions,
   sanitizeSelectedSearchOptions,
 } = require("./optionModel");
 
 const SEARCH_OPTIONS_KEY = "selectedSearchOptions";
+const SEARCH_OPTIONS_VERSION_KEY = "selectedSearchOptionsVersion";
 
 // 모든 검색 옵션들 (사용자가 선택할 수 있는 전체 목록)
 export const allSearchOptions = [
@@ -46,11 +49,14 @@ export const allSearchOptions = [
     baseUrl: "https://search.brave.com/search?q=",
     region: "global",
   },
-  // AI 서비스
+  // Provider app links open installed apps; baseUrl remains the web fallback.
   {
     label: "ChatGPT",
+    shortLabel: "GPT",
     key: "chatgpt",
     baseUrl: "https://chatgpt.com",
+    appUrl: "https://chatgpt.com/#native", // The home Universal Link requires #native.
+    prefillUrl: "https://chatgpt.com/?prompt=",
     region: "ai",
     copyToClipboard: true, // 클립보드 복사 필요
   },
@@ -58,6 +64,8 @@ export const allSearchOptions = [
     label: "Claude",
     key: "claude",
     baseUrl: "https://claude.ai",
+    appUrl: "https://claude.ai/new",
+    prefillUrl: "https://claude.ai/new?q=",
     region: "ai",
     copyToClipboard: true, // 클립보드 복사 필요
   },
@@ -65,6 +73,8 @@ export const allSearchOptions = [
     label: "Gemini",
     key: "gemini",
     baseUrl: "https://gemini.google.com",
+    appUrl: "https://gemini.google.com/app",
+    iosAppUrl: "googlegemini://",
     region: "ai",
     copyToClipboard: true, // 클립보드 복사 필요
   },
@@ -72,6 +82,9 @@ export const allSearchOptions = [
     label: "Grok",
     key: "grok",
     baseUrl: "https://grok.com",
+    appUrl: "https://grok.com/",
+    prefillUrl: "https://grok.com/?q=",
+    prefillSuffix: "&autoSubmit=false",
     region: "ai",
     copyToClipboard: true, // 클립보드 복사 필요
   },
@@ -84,6 +97,7 @@ export const allSearchOptions = [
   },
   {
     label: "Microsoft Copilot",
+    shortLabel: "Copilot",
     key: "copilot",
     baseUrl: "https://copilot.com",
     region: "ai",
@@ -175,8 +189,8 @@ export const allSearchOptions = [
 // 기본 선택된 검색 옵션들 (초기값)
 export { defaultSelectedSearchOptions };
 
-const defaultActionOptions = allSearchOptions.filter((opt) =>
-  defaultSelectedSearchOptions.includes(opt.key)
+const defaultActionOptions = allSearchOptions.filter((option) =>
+  option.region !== "ai" && defaultSelectedSearchOptions.includes(option.key)
 );
 
 export const colorOptions = [
@@ -191,24 +205,22 @@ export const colorOptions = [
 // AsyncStorage 관련 함수들
 export const getSelectedSearchOptions = async () => {
   try {
-    const saved = await AsyncStorage.getItem(SEARCH_OPTIONS_KEY);
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      const sanitizedOptions = sanitizeSelectedSearchOptions(parsed);
-      if (JSON.stringify(parsed) !== JSON.stringify(sanitizedOptions)) {
-        await AsyncStorage.setItem(
-          SEARCH_OPTIONS_KEY,
-          JSON.stringify(sanitizedOptions)
-        );
-      }
-      return sanitizedOptions;
-    }
-    // 저장된 값이 없으면 초기값 저장하고 반환
-    await AsyncStorage.setItem(
+    const [[, saved], [, storedVersion]] = await AsyncStorage.multiGet([
       SEARCH_OPTIONS_KEY,
-      JSON.stringify(defaultSelectedSearchOptions)
+      SEARCH_OPTIONS_VERSION_KEY,
+    ]);
+    const selectedKeys = migrateSelectedSearchOptions(
+      saved ? JSON.parse(saved) : null,
+      storedVersion
     );
-    return defaultSelectedSearchOptions;
+    const serialized = JSON.stringify(selectedKeys);
+    if (saved !== serialized || storedVersion !== SEARCH_OPTIONS_VERSION) {
+      await AsyncStorage.multiSet([
+        [SEARCH_OPTIONS_KEY, serialized],
+        [SEARCH_OPTIONS_VERSION_KEY, SEARCH_OPTIONS_VERSION],
+      ]);
+    }
+    return selectedKeys;
   } catch (error) {
     console.error("Failed to get search options:", error);
     return defaultSelectedSearchOptions;
@@ -217,10 +229,13 @@ export const getSelectedSearchOptions = async () => {
 
 export const saveSelectedSearchOptions = async (selectedKeys) => {
   try {
-    await AsyncStorage.setItem(
-      SEARCH_OPTIONS_KEY,
-      JSON.stringify(sanitizeSelectedSearchOptions(selectedKeys))
-    );
+    await AsyncStorage.multiSet([
+      [
+        SEARCH_OPTIONS_KEY,
+        JSON.stringify(sanitizeSelectedSearchOptions(selectedKeys)),
+      ],
+      [SEARCH_OPTIONS_VERSION_KEY, SEARCH_OPTIONS_VERSION],
+    ]);
     return true;
   } catch (error) {
     console.error("Failed to save search options:", error);
@@ -233,7 +248,7 @@ export const getActionOptions = async () => {
     const selectedKeys = await getSelectedSearchOptions();
     const selectedSearchOptions = selectedKeys
       .map((key) => allSearchOptions.find((opt) => opt.key === key))
-      .filter(Boolean);
+      .filter((option) => option && option.region !== "ai");
     return selectedSearchOptions;
   } catch (error) {
     console.error("Failed to get action options:", error);

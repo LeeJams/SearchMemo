@@ -5,6 +5,7 @@ import {
   StyleSheet,
   Pressable,
   Linking,
+  Platform,
   ActivityIndicator,
   ScrollView,
   Alert,
@@ -52,22 +53,18 @@ function MemoActionModal({ visible, closeModal, selectedMemo }) {
     }
   };
 
-  const openExternalUrl = async (url) => {
-    const canOpen = await Linking.canOpenURL(url);
-    if (!canOpen) {
-      throw new Error(`Cannot open URL: ${url}`);
-    }
-    await Linking.openURL(url);
-  };
-
   const handleOptionPress = async (option) => {
     if (!selectedMemo) return;
 
     try {
-      const launchPlan = buildSearchLaunchPlan(option, selectedMemo.text);
+      const launchPlan = buildSearchLaunchPlan(
+        option,
+        selectedMemo.text,
+        Platform.OS
+      );
       await executeSearchLaunch(launchPlan, {
         copyText: Clipboard.setStringAsync,
-        openUrl: openExternalUrl,
+        openUrl: (url) => Linking.openURL(url),
       });
       closeModal();
     } catch (error) {
@@ -179,6 +176,13 @@ function MemoActionModal({ visible, closeModal, selectedMemo }) {
                 ]}
                 showsVerticalScrollIndicator={false}
               >
+                {searchOptions.length === 0 && (
+                  <View style={styles.emptyContainer}>
+                    <Text style={[styles.emptyText, { color: theme.textSecondary }]}>
+                      {i18n.t("noSearchServiceSelected")}
+                    </Text>
+                  </View>
+                )}
                 {searchOptionRows.map((row, rowIndex) => (
                   <View key={`row-${rowIndex}`} style={styles.optionRow}>
                     {row.map((option, columnIndex) =>
@@ -314,5 +318,15 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     width: "100%",
+  },
+  emptyContainer: {
+    paddingHorizontal: 16,
+    paddingVertical: 24,
+  },
+  emptyText: {
+    fontSize: 13,
+    lineHeight: 22,
+    textAlign: "center",
+    fontFamily: "NotoSansKR-Regular",
   },
 });
